@@ -210,6 +210,13 @@ A topical index covering every concept across all documents in this repo. Use th
 - Practical setup plan (phased) — [AGENT-SETUP: 6](AGENT-SETUP.md#6-practical-setup-plan)
 - LLM prompt templates — [BP: 19](BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow)
 
+## Contributing & Style
+
+- Voice and style guide — [STYLE.md](STYLE.md)
+- Phrase replacements (avoid → prefer) — [STYLE.md: Phrasing Rules](STYLE.md#phrasing-rules)
+- Content checklist — [STYLE.md: Checklist](STYLE.md#checklist-for-new-content)
+- Local linting (`make lint`) — [Makefile](../Makefile)
+
 ---
 
 [← Back to README](../README.md)
