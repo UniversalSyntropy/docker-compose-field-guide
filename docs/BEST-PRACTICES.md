@@ -745,7 +745,7 @@ services:
 | Format | Shell Required? | Use When |
 |--------|----------------|----------|
 | `["CMD", "binary", "args"]` | No | Default — more secure, works in minimal images |
-| `["CMD-SHELL", "command \|\| exit 1"]` | Yes (`/bin/sh`) | Need pipes, `\|\|`, or shell features |
+| `["CMD-SHELL", "command &#124;&#124; exit 1"]` | Yes (`/bin/sh`) | Need pipes, `&#124;&#124;`, or shell features |
 
 > **Gotcha:** Some minimal images (distroless, Portainer, scratch-based) have no shell — `CMD-SHELL` will fail. Use `CMD` with a binary that exists in the image.
 

@@ -24,6 +24,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DavidAnson/markdownlint-cli2-action@v19
 
+  shell-lint:
+    name: Shell Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        run: shellcheck scripts/*.sh
+
   compose-validate:
     name: Compose Validation
     runs-on: ubuntu-latest
@@ -43,6 +51,28 @@ jobs:
       - name: Validate monitoring compose file
         run: docker compose -f monitoring/docker-compose.yml config --quiet
 
+  line-length:
+    name: Giant-Line Regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for lines exceeding 500 characters
+        run: |
+          echo "Checking for lines longer than 500 characters..."
+          status=0
+          while IFS= read -r -d '' file; do
+            result=$(awk 'length > 500 {printf "  line %d: %d chars\n", NR, length}' "$file")
+            if [ -n "$result" ]; then
+              echo "FAIL: $file"
+              echo "$result"
+              status=1
+            fi
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' \) ! -path './.git/*' -print0)
+          if [ "$status" -eq 0 ]; then
+            echo "PASS: No lines exceed 500 characters."
+          fi
+          exit "$status"
+
   link-check:
     name: Link Check
     runs-on: ubuntu-latest
@@ -50,5 +80,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: lycheeverse/lychee-action@v2
         with:
-          args: --no-progress '**/*.md'
-          fail: false
+          args: --no-progress --offline '**/*.md'
+          fail: true
