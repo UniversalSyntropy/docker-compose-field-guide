@@ -1,0 +1,24 @@
+# Secrets — never commit passwords or tokens
+secrets/
+
+# Environment — contains local-specific config; use .env.example as template
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

@@ -1,0 +1,127 @@
+# =============================================================================
+# PROMETHEUS CONFIGURATION — TEMPLATE
+# =============================================================================
+# Customise: Replace placeholder IPs and tokens with your own values.
+# Reload without restart: curl -X POST http://localhost:9090/-/reload
+# =============================================================================
+
+global:
+  scrape_interval: 15s       # Default scrape frequency
+  evaluation_interval: 15s   # Rule evaluation frequency
+  scrape_timeout: 10s        # Timeout per scrape
+
+  external_labels:
+    monitor: 'docker-monitoring'
+
+# Alertmanager (optional — uncomment if using alerting)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Rule files (optional — uncomment if using recording/alerting rules)
+# rule_files:
+#   - "alerts.yml"
+
+# =============================================================================
+# SCRAPE TARGETS
+# =============================================================================
+
+scrape_configs:
+
+  # ---------------------------------------------------------------------------
+  # PROMETHEUS — Self-monitoring
+  # ---------------------------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # ---------------------------------------------------------------------------
+  # NODE EXPORTER — Host system metrics
+  # ---------------------------------------------------------------------------
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          instance: 'local'
+
+  # ---------------------------------------------------------------------------
+  # CADVISOR — Docker container metrics
+  # ---------------------------------------------------------------------------
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          instance: 'local'
+
+  # ---------------------------------------------------------------------------
+  # APPLICATION METRICS — Example for apps that expose /metrics or custom path
+  # ---------------------------------------------------------------------------
+  # - job_name: 'my-app'
+  #   metrics_path: '/metrics'            # Default; change if your app uses another path
+  #   static_configs:
+  #     - targets: ['app:8080']
+  #       labels:
+  #         instance: 'local'
+
+  # ---------------------------------------------------------------------------
+  # AUTHENTICATED ENDPOINTS — Example with bearer token file
+  # Useful for services like Home Assistant that require auth for metrics.
+  # Use bearer_token_file (not bearer_token) to avoid embedding secrets in
+  # config files that may be committed to git.
+  # ---------------------------------------------------------------------------
+  # - job_name: 'authenticated-app'
+  #   scrape_interval: 60s               # Less frequent for heavy endpoints
+  #   metrics_path: '/api/prometheus'
+  #   scheme: 'http'
+  #   static_configs:
+  #     - targets: ['172.17.0.1:8123']   # Docker bridge gateway to host network
+  #   bearer_token_file: '/run/secrets/app_bearer_token'  # Via Docker secrets
+
+  # ---------------------------------------------------------------------------
+  # REMOTE HOST — Node Exporter on another machine
+  # Install Node Exporter on the target, then add its IP here.
+  # ---------------------------------------------------------------------------
+  # - job_name: 'remote-host'
+  #   static_configs:
+  #     - targets: ['10.0.0.10:9100']
+  #       labels:
+  #         instance: 'server-01'
+
+  # ---------------------------------------------------------------------------
+  # REMOTE HOST — cAdvisor on another machine
+  # ---------------------------------------------------------------------------
+  # - job_name: 'remote-docker'
+  #   static_configs:
+  #     - targets: ['10.0.0.10:8080']
+  #       labels:
+  #         instance: 'server-01'
+
+  # ---------------------------------------------------------------------------
+  # NETWORK DEVICE — SNMP metrics via SNMP Exporter proxy
+  # ---------------------------------------------------------------------------
+  # - job_name: 'network-device'
+  #   static_configs:
+  #     - targets:
+  #       - 10.0.0.1                     # Router/switch IP
+  #   metrics_path: /snmp
+  #   params:
+  #     module: [if_mib]                 # Standard network interface MIB
+  #     auth: [public_v2]               # CHANGE: your SNMP community string
+  #   relabel_configs:
+  #     - source_labels: [__address__]
+  #       target_label: __param_target
+  #     - source_labels: [__param_target]
+  #       target_label: instance
+  #     - target_label: __address__
+  #       replacement: snmp-exporter:9116
+  #   scrape_interval: 30s
+
+# =============================================================================
+# ADDING NEW TARGETS
+# =============================================================================
+# 1. Install the exporter on the target machine
+# 2. Add a new job_name section above with the target's IP/hostname
+# 3. Reload: curl -X POST http://localhost:9090/-/reload
+# 4. Verify: check http://localhost:9090/targets
+# =============================================================================
