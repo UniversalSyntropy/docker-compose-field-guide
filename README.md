@@ -6,6 +6,33 @@ A practical, opinionated guide to building Docker Compose stacks that are secure
 
 ---
 
+## What's In Here
+
+This repo is a single reference you can keep coming back to. It covers the full lifecycle of a Docker Compose stack — from first design decisions through security hardening, deployment, monitoring, and long-term maintenance.
+
+**The short version:**
+
+- **An annotated `docker-compose.yml` template** you can copy into any project — pre-configured with security defaults, log rotation, resource limits, and healthchecks
+- **21 sections of best practices** covering everything from [network trust zones](docs/BEST-PRACTICES.md#72-network-isolation-by-trust-zone) and [secrets management](docs/BEST-PRACTICES.md#36-secrets-management) to [USB device passthrough](docs/BEST-PRACTICES.md#16-usb--hardware-devices) and [cross-platform gotchas](docs/BEST-PRACTICES.md#15-cross-platform-compatibility) (the WSL2/NTFS warning alone will save you hours)
+- **A troubleshooting guide** with a step-by-step [debugging playbook](docs/TROUBLESHOOTING.md#2-debugging-playbook), [decision tree](docs/TROUBLESHOOTING.md#6-troubleshooting-decision-tree), and fixes for the issues that catch everyone — orphan containers, port conflicts, data that "disappears" after a recreate
+- **A monitoring stack** (Prometheus + Grafana + Node Exporter + cAdvisor) ready to drop into your project
+- **Helper scripts** for safe resets, hard resets, disk reports, and pruning — so you don't have to remember the flags
+- **A glossary and topical index** so you can look up any term or find where a topic is discussed across all the docs
+- **AI agent instructions** (Claude Code, Copilot, Codex, Cursor) so your coding tools follow the same standards you do
+
+**Highlights worth browsing:**
+
+| Section | Why it's useful |
+|---------|----------------|
+| [Image trust framework (T1–T5)](docs/BEST-PRACTICES.md#181-image-trust-framework) | A simple model for deciding whether to trust a container image |
+| [Security exceptions table](docs/BEST-PRACTICES.md#39-documenting-security-exceptions) | How to document *why* a service breaks the rules and what compensates |
+| [CIS Benchmark mapping](docs/BEST-PRACTICES.md#17-penetration-testing-readiness) | Every security control mapped to what a pen tester would flag if it's missing |
+| [LLM prompt templates](docs/BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow) | Copy-paste prompts for getting an LLM to design, critique, and debug your stack |
+| [Cleanup levels (safe → nuclear)](docs/TROUBLESHOOTING.md#4-cleanup-and-prune-strategy) | Five levels of Docker cleanup, from project-scoped to "remove everything unused" |
+| [Capability cheat sheet](docs/BEST-PRACTICES.md#32-capability-management) | Which Linux capabilities each service type actually needs |
+
+---
+
 ## Repo Structure
 
 ```
