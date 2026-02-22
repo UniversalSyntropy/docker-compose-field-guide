@@ -1,0 +1,54 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install yamllint
+        run: pip install yamllint
+      - name: Lint YAML files
+        run: yamllint -d relaxed .
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+
+  compose-validate:
+    name: Compose Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create required files for validation
+        run: |
+          mkdir -p secrets
+          echo -n "placeholder" > secrets/db_password.txt
+          echo -n "placeholder" > secrets/grafana_admin_password.txt
+          cp .env.example .env
+
+      - name: Validate main compose file
+        run: docker compose config --quiet
+
+      - name: Validate monitoring compose file
+        run: docker compose -f monitoring/docker-compose.yml config --quiet
+
+  link-check:
+    name: Link Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress '**/*.md'
+          fail: false

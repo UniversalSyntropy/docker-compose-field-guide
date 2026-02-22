@@ -1,0 +1,238 @@
+# =============================================================================
+# MONITORING STACK — DOCKER COMPOSE EXAMPLE
+# =============================================================================
+# A reference monitoring stack demonstrating best practices.
+# Includes: Prometheus (metrics), Grafana (dashboards), Node Exporter (host
+# metrics), cAdvisor (container metrics), SNMP Exporter (network devices).
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2
+#
+# Usage:
+#   docker compose up -d                          # Start all services
+#   curl -X POST http://localhost:9090/-/reload   # Hot-reload Prometheus config
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# REUSABLE CONFIGURATION BLOCKS
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-security: &default-security
+  security_opt:
+    - no-new-privileges:true             # CIS 5.25
+  cap_drop:
+    - ALL                                # CIS 5.3
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # PROMETHEUS — Metrics collection and time-series database
+  # Web UI: http://localhost:9090
+  # ---------------------------------------------------------------------------
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v3.9.1        # Pin exact — v3 tag doesn't exist
+    <<: *default-security
+    user: "1000:1000"                    # Run as non-root
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${DATA_DIR:-/mnt/data}/monitoring/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=5GB'
+      - '--web.enable-lifecycle'         # Enables /-/reload for hot config reload
+    ports:
+      - "9090:9090"
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 200
+    stop_grace_period: 15s               # TSDB WAL flush on shutdown
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - monitoring
+
+  # ---------------------------------------------------------------------------
+  # NODE EXPORTER — Host system metrics (CPU, memory, disk, network)
+  # Port: 9100
+  #
+  # Platform notes:
+  #   Linux:   Reports real host metrics via /proc and /sys
+  #   macOS:   Reports Docker VM metrics — not useful for host monitoring
+  #   Windows: Same as macOS — use windows_exporter natively instead
+  # ---------------------------------------------------------------------------
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.10.2    # Pin exact — v1 tag doesn't exist
+    <<: *default-security
+    read_only: true
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /:/host:ro,rslave
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    ports:
+      - "9100:9100"
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 50
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - monitoring
+
+  # ---------------------------------------------------------------------------
+  # CADVISOR — Docker container metrics (CPU, memory, network per container)
+  # Port: 8080
+  #
+  # Platform notes:
+  #   Linux:   Full metrics via cgroup v2 (requires privileged mode)
+  #   macOS:   Reports VM-level metrics; container names may show as IDs
+  #   Windows: Limited cgroup support in WSL2
+  # ---------------------------------------------------------------------------
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    # Cannot use <<: *default-security — privileged: true overrides cap_drop
+    security_opt:
+      - no-new-privileges:true
+    privileged: true                     # Required for cgroup v2 metrics
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    ports:
+      - "8080:8080"
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 100
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - monitoring
+
+  # ---------------------------------------------------------------------------
+  # SNMP EXPORTER — Network device metrics (router, switch, access point)
+  # Port: 9116
+  # Prometheus scrapes this as a proxy — see prometheus.yml for config.
+  #
+  # Platform notes: Works on all platforms.
+  # ---------------------------------------------------------------------------
+  snmp-exporter:
+    container_name: snmp-exporter
+    image: prom/snmp-exporter:v0.30.1
+    <<: *default-security
+    read_only: true
+    ports:
+      - "9116:9116"
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 50
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9116/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - monitoring
+
+  # ---------------------------------------------------------------------------
+  # GRAFANA — Dashboards and visualisation
+  # Web UI: http://localhost:3000
+  # Default login: admin / (password from secrets file)
+  #
+  # Platform notes: Works on all platforms.
+  # ---------------------------------------------------------------------------
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:12.3.3        # Pin exact — grafana:12 doesn't exist
+    <<: *default-security
+    user: "1000:1000"                    # Run as non-root
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR:-/mnt/data}/monitoring/grafana:/var/lib/grafana
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin_password
+      - GF_INSTALL_PLUGINS=
+    secrets:
+      - grafana_admin_password
+    ports:
+      - "3000:3000"
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 200
+    stop_grace_period: 15s
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - monitoring
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+# =============================================================================
+# SECRETS
+# =============================================================================
+secrets:
+  grafana_admin_password:
+    file: ../secrets/grafana_admin_password.txt
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  monitoring:
+    driver: bridge

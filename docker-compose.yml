@@ -1,0 +1,271 @@
+# =============================================================================
+# DOCKER COMPOSE BEST PRACTICES — ANNOTATED TEMPLATE
+# =============================================================================
+# A reference compose file demonstrating production best practices.
+# Copy this file into your project and adapt the services to your needs.
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2 (the `docker compose` plugin, not legacy `docker-compose`)
+#
+# Compatibility:
+#   This file targets Docker Engine + Docker Compose v2. Some keys
+#   (mem_limit, cpus, pids_limit) are Docker-specific and may differ
+#   in Podman Compose or Swarm mode.
+#
+# Note on container_name:
+#   We use container_name in examples for clarity. In production, omit it
+#   unless tooling requires a stable name — it prevents `--scale` and can
+#   cause naming collisions across parallel stacks.
+#
+# Usage:
+#   docker compose config --quiet      # Validate syntax
+#   docker compose up -d               # Start all services
+#   docker compose logs -f <service>   # Follow logs for a service
+#   docker compose down                # Stop and remove containers
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# REUSABLE CONFIGURATION BLOCKS (YAML Anchors)
+# -----------------------------------------------------------------------------
+# Define shared config once using extension fields (x- prefix).
+# Reference with * and merge with <<.
+#
+# Gotcha: << performs a shallow merge — if a service defines its own
+# `security_opt`, it REPLACES the anchor entirely (lists don't merge).
+# In that case, spell out the full block inline.
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"                      # Cap each log file at 10MB
+    max-file: "3"                        # Keep 3 rotated files (30MB max per container)
+
+x-security: &default-security
+  security_opt:
+    - no-new-privileges:true             # CIS 5.25 — block setuid privilege escalation
+  cap_drop:
+    - ALL                                # CIS 5.3  — drop all Linux capabilities by default
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+# Each service below demonstrates a different pattern. Replace these with
+# your actual services — the comments explain WHY each directive is used.
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Web application
+  # Demonstrates: security defaults, resource limits, healthcheck, secrets,
+  #               network isolation, dependency ordering
+  # ---------------------------------------------------------------------------
+  app:
+    container_name: app
+    image: your-app:1.0.0                # Always pin to an exact version tag
+    <<: *default-security                # Apply security defaults
+    # If you need extra capabilities, add them back explicitly:
+    # cap_add:
+    #   - NET_BIND_SERVICE               # Only if binding to ports < 1024
+    read_only: true                      # Immutable root filesystem
+    tmpfs:
+      - /tmp                             # Writable temp directory in RAM
+    volumes:
+      - ${DATA_DIR}/app:/data            # Persistent data on external storage
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=${TZ}
+      # Gotcha: Connection URLs often embed passwords. You can't use the _FILE
+      # suffix pattern here — the app must support reading the password from a
+      # file and constructing the URL itself, or use a wrapper entrypoint.
+      # At minimum, never commit the real password — use a placeholder.
+      - DATABASE_URL=postgres://app:CHANGE_ME@database:5432/app
+    mem_limit: 256m                      # CIS 5.10 — prevent OOM killing neighbours
+    cpus: 1.0                            # CIS 5.12 — prevent CPU starvation
+    pids_limit: 200                      # CIS 5.28 — prevent fork bombs
+    stop_grace_period: 15s               # Time for graceful shutdown before SIGKILL
+    restart: unless-stopped              # Auto-restart on crash, not on manual stop
+    logging: *default-logging
+    healthcheck:
+      # Gotcha: use an endpoint that doesn't require authentication
+      # Gotcha: some minimal images have no curl/wget — use CMD not CMD-SHELL
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s                      # How often to check
+      timeout: 10s                       # Must be < interval
+      retries: 3                         # Failures before marking unhealthy
+      start_period: 30s                  # Grace period for slow-starting services
+    depends_on:
+      database:
+        condition: service_healthy       # Wait for database to be ready
+    networks:
+      - frontend
+      - backend
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Database
+  # Demonstrates: secrets, named volumes, stop_grace_period, backend-only network
+  # ---------------------------------------------------------------------------
+  database:
+    container_name: database
+    image: postgres:16.6                 # Pin to exact version
+    <<: *default-security
+    volumes:
+      - ${DATA_DIR}/postgres:/var/lib/postgresql/data
+    secrets:
+      - db_password
+    environment:
+      - POSTGRES_DB=app
+      - POSTGRES_USER=app
+      # Use _FILE suffix to read password from Docker secret (not all images support this)
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 200
+    stop_grace_period: 30s               # Databases need time to flush WAL on shutdown
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - backend                          # Only reachable from backend network
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Redis cache
+  # Demonstrates: read-only filesystem, lightweight resource limits
+  # ---------------------------------------------------------------------------
+  cache:
+    container_name: cache
+    image: redis:7.4.2
+    <<: *default-security
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR}/redis:/data
+    # No ports: published — other services reach Redis by name (cache:6379)
+    # on the shared backend network. Only publish if host tools need access:
+    # ports:
+    #   - "127.0.0.1:6379:6379"           # Localhost only — never 0.0.0.0
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 100
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - backend
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Reverse proxy
+  # Demonstrates: host network mode, capability add-back
+  #
+  # Platform notes:
+  #   Linux:   network_mode: host gives direct LAN access
+  #   macOS:   Connects to Docker VM network, not your LAN
+  #   Windows: Same as macOS
+  # ---------------------------------------------------------------------------
+  # proxy:
+  #   container_name: proxy
+  #   image: nginx:1.27.4
+  #   <<: *default-security
+  #   cap_add:
+  #     - NET_BIND_SERVICE               # Required for binding to ports 80/443
+  #   read_only: true
+  #   tmpfs:
+  #     - /tmp
+  #     - /var/cache/nginx
+  #     - /run
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   # Gotcha: network_mode: host means this container CANNOT join bridge networks.
+  #   # Other containers reach it via the Docker gateway IP (172.17.0.1 by default).
+  #   network_mode: host
+  #   mem_limit: 128m
+  #   cpus: 0.5
+  #   pids_limit: 100
+  #   restart: unless-stopped
+  #   logging: *default-logging
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Management tools with Docker socket access
+  # Demonstrates: socket safety, read-only mount
+  # ---------------------------------------------------------------------------
+  # portainer:
+  #   container_name: portainer
+  #   image: portainer/portainer-ce:2.33.7
+  #   <<: *default-security
+  #   volumes:
+  #     # WARNING: Docker socket gives root-equivalent access to the host.
+  #     # Mount read-only where possible. Only grant to trusted management tools.
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ${DATA_DIR}/portainer:/data
+  #   ports:
+  #     - "9000:9000"
+  #   mem_limit: 128m
+  #   cpus: 0.5
+  #   pids_limit: 100
+  #   restart: unless-stopped
+  #   logging: *default-logging
+  #   # Gotcha: Portainer's minimal image has no shell/wget/curl — healthchecks
+  #   # are impossible. Docker will report "running" instead of "healthy".
+  #   networks:
+  #     - management
+
+  # ---------------------------------------------------------------------------
+  # EXAMPLE: Auto-updater
+  # Demonstrates: Watchtower with selective updates
+  # ---------------------------------------------------------------------------
+  # watchtower:
+  #   container_name: watchtower
+  #   image: containrrr/watchtower:1.7.1
+  #   <<: *default-security
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro    # Read-only is sufficient
+  #   environment:
+  #     - WATCHTOWER_CLEANUP=true                         # Remove old images
+  #     - WATCHTOWER_SCHEDULE=0 0 4 * * *                 # 4am daily
+  #     - WATCHTOWER_LABEL_ENABLE=false                   # Update all except opted-out
+  #   mem_limit: 64m
+  #   cpus: 0.25
+  #   pids_limit: 50
+  #   restart: unless-stopped
+  #   logging: *default-logging
+  #   # Exclude critical services from auto-update:
+  #   # labels:
+  #   #   - "com.centurylinklabs.watchtower.enable=false"
+  #   networks:
+  #     - management
+
+# =============================================================================
+# SECRETS
+# =============================================================================
+# File-based secrets — requires Docker Compose v2.
+# The secrets/ directory should be in .gitignore.
+# Not all images support _FILE env vars — check the image documentation.
+# =============================================================================
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+# Isolated bridge networks limit lateral movement if a container is compromised.
+# Services only need to join networks where they have dependencies.
+# =============================================================================
+networks:
+  frontend:
+    driver: bridge               # Public-facing services
+  backend:
+    driver: bridge               # Internal services (databases, caches)
+  # management:
+  #   driver: bridge             # Docker management tools (socket access)
