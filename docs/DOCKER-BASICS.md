@@ -1,6 +1,8 @@
 # Docker & Docker Compose — Quick Start Guide
 
-A plain-English introduction to Docker and Docker Compose for people setting up their first stack. If you already know what containers are, skip to [Docker Compose](#what-is-docker-compose) or go straight to the [best practices](BEST-PRACTICES.md). See also the [glossary](GLOSSARY.md) for quick definitions of any term.
+A plain-English introduction to Docker and Docker Compose for people setting up their first stack.
+If you already know what containers are, skip to [Docker Compose](#what-is-docker-compose) or go straight to the [best practices](BEST-PRACTICES.md).
+See also the [glossary](GLOSSARY.md) for quick definitions of any term.
 
 ---
 
