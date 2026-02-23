@@ -4,9 +4,13 @@ A structured reference covering every element of a Docker Compose stack — secu
 
 **Last Updated:** February 2026
 
-> **Compatibility:** This document targets **Docker Engine 24+** with the **Docker Compose v2** plugin (`docker compose`). Some runtime keys (`mem_limit`, `cpus`, `pids_limit`) are Docker-specific and may behave differently in Podman Compose or Docker Swarm. The legacy Python-based `docker-compose` (v1) is deprecated and not covered.
+> **Compatibility:** This document targets **Docker Engine 24+** with the **Docker Compose v2** plugin (`docker compose`).
+> Some runtime keys (`mem_limit`, `cpus`, `pids_limit`) are Docker-specific and may behave differently in Podman Compose or Docker Swarm.
+> The legacy Python-based `docker-compose` (v1) is deprecated and not covered.
 
-> **Threat model:** This guide assumes a **self-hosted homelab or small-team environment** — services are LAN-facing, not directly exposed to the internet. For internet-facing production, add a reverse proxy with TLS, WAF, rate limiting, and stricter network policies. The security hardening here is a strong baseline, not a substitute for a full security architecture.
+> **Threat model:** This guide assumes a **self-hosted homelab or small-team environment** — services are LAN-facing, not directly exposed to the internet.
+> For internet-facing production, add a reverse proxy with TLS, WAF, rate limiting, and stricter network policies.
+> The security hardening here is a strong baseline, not a substitute for a full security architecture.
 
 > **New to Docker?** Start with [DOCKER-BASICS.md](DOCKER-BASICS.md) for an introduction to Docker, Compose, and alternative container runtimes. See the [glossary](GLOSSARY.md) for quick definitions of any term, or the [index](INDEX.md) to find where a topic is covered.
 
@@ -148,7 +152,9 @@ docker compose version    # Should show v2.x.x
 
 > **Gotcha:** Not all images publish major-only tags. For example, `grafana/grafana:12`, `prom/prometheus:v3`, and `prom/node-exporter:v1` do **not** exist. Always verify with `docker pull <image>:<tag>` before committing.
 
-> **Gotcha (tag mismatch):** A container's internal version may not match any Docker Hub tag. For example, `eclipse-mosquitto:2` pulls an image that reports version `2.1.2` internally, but Docker Hub only publishes `eclipse-mosquitto:2.1.2-alpine` — there is no `eclipse-mosquitto:2.1.2` tag. Always check the registry (Docker Hub tags page or `docker manifest inspect`) rather than trusting `docker inspect` labels or in-container version commands.
+> **Gotcha (tag mismatch):** A container's internal version may not match any Docker Hub tag.
+> For example, `eclipse-mosquitto:2` pulls an image that reports version `2.1.2` internally, but Docker Hub only publishes `eclipse-mosquitto:2.1.2-alpine` — there is no `eclipse-mosquitto:2.1.2` tag.
+> Always check the registry (Docker Hub tags page or `docker manifest inspect`) rather than trusting `docker inspect` labels or in-container version commands.
 
 ### 2.2 Multi-Architecture Images
 
@@ -226,7 +232,9 @@ services:
 
 Or build images with a non-root `USER` directive.
 
-> **Note:** `PUID`/`PGID` environment variables are a [LinuxServer.io](https://docs.linuxserver.io/general/understanding-puid-and-pgid/) convention, not a Docker or official-image standard. Most official images (postgres, redis, nginx) do **not** support them. Check the image documentation for the correct method — some use `user:` in compose, others handle ownership in their entrypoint.
+> **Note:** `PUID`/`PGID` environment variables are a [LinuxServer.io](https://docs.linuxserver.io/general/understanding-puid-and-pgid/) convention, not a Docker or official-image standard.
+> Most official images (postgres, redis, nginx) do **not** support them.
+> Check the image documentation for the correct method — some use `user:` in compose, others handle ownership in their entrypoint.
 
 ### 3.5 Docker Socket Safety
 
@@ -240,7 +248,9 @@ Rules:
 - Mount with `:ro` where possible: `/var/run/docker.sock:/var/run/docker.sock:ro`
 - Both Watchtower and Portainer work with `:ro` mounts
 
-> **Gotcha (`:ro` is not API restriction):** The `:ro` flag on a Unix socket mount only prevents deleting or replacing the socket **file** — it does **not** restrict API operations sent through the socket. A container with `:ro` socket access can still create privileged containers, mount the host filesystem, and execute commands as root. The `:ro` flag prevents one specific attack (replacing the socket with a malicious one) but is not meaningful access control.
+> **Gotcha (`:ro` is not API restriction):** The `:ro` flag on a Unix socket mount only prevents deleting or replacing the socket **file** — it does **not** restrict API operations sent through the socket.
+> A container with `:ro` socket access can still create privileged containers, mount the host filesystem, and execute commands as root.
+> The `:ro` flag prevents one specific attack (replacing the socket with a malicious one) but is not meaningful access control.
 
 - For real socket protection, use [Tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy) to expose only specific API endpoints (e.g., allow container listing but block container creation)
 

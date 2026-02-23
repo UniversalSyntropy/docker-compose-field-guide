@@ -38,7 +38,9 @@ Fine-grained permissions that break down what "root" can do. Docker best practic
 
 ### CIS Docker Benchmark
 
-A security standard published by the Center for Internet Security. Defines controls like "drop all capabilities" (5.3), "set memory limits" (5.10), and "block privilege escalation" (5.25). This repo references CIS controls throughout. See [Penetration Testing Readiness](BEST-PRACTICES.md#17-penetration-testing-readiness).
+A security standard published by the Center for Internet Security.
+Defines controls like "drop all capabilities" (5.3), "set memory limits" (5.10), and "block privilege escalation" (5.25).
+This repo references CIS controls throughout. See [Penetration Testing Readiness](BEST-PRACTICES.md#17-penetration-testing-readiness).
 
 ### Compose file
 
@@ -46,7 +48,9 @@ The YAML file (usually `docker-compose.yml`) that defines your entire stack — 
 
 ### Compose project
 
-A group of containers, networks, and volumes managed together by Compose. The **project name** (derived from the directory name, `name:` key, or `COMPOSE_PROJECT_NAME`) determines how resources are grouped. Changing it creates a completely separate stack. See [Docker Basics — Project](DOCKER-BASICS.md#project-compose-term).
+A group of containers, networks, and volumes managed together by Compose.
+The **project name** (derived from the directory name, `name:` key, or `COMPOSE_PROJECT_NAME`) determines how resources are grouped.
+Changing it creates a completely separate stack. See [Docker Basics — Project](DOCKER-BASICS.md#project-compose-term).
 
 ### Container
 
@@ -102,7 +106,9 @@ An open-source dashboard and visualisation platform. Connects to data sources li
 
 ### Healthcheck
 
-A command that runs periodically inside a container to verify the service is working. If the check fails repeatedly, the container is marked **unhealthy**. Other services can wait for healthy status using [depends_on](#depends_on). See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks--dependencies).
+A command that runs periodically inside a container to verify the service is working.
+If the check fails repeatedly, the container is marked **unhealthy**.
+Other services can wait for healthy status using [depends_on](#depends_on). See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks--dependencies).
 
 ### Host network
 
@@ -146,7 +152,8 @@ When a container exceeds its memory limit (`mem_limit`), the Linux kernel kills 
 
 ### Orphan container
 
-A container that Compose no longer manages — usually caused by renaming a service, changing the project name, or running from a different directory. Clean up with `docker compose down --remove-orphans`. See [Troubleshooting — Orphan Containers](TROUBLESHOOTING.md#11-orphan-containers-after-renaming-services).
+A container that Compose no longer manages — usually caused by renaming a service, changing the project name, or running from a different directory.
+Clean up with `docker compose down --remove-orphans`. See [Troubleshooting — Orphan Containers](TROUBLESHOOTING.md#11-orphan-containers-after-renaming-services).
 
 ### Port mapping
 
@@ -202,7 +209,9 @@ Per-container resource limits for things like open files (`nofile`), processes (
 
 ### Volume
 
-Persistent storage that survives container restarts and recreations. Comes in three forms: [bind mounts](#bind-mount), [named volumes](#named-volume), and [anonymous volumes](#anonymous-volume). Without a volume, all data inside a container is lost when it's removed. See [Storage & Volumes](BEST-PRACTICES.md#4-storage--volumes).
+Persistent storage that survives container restarts and recreations.
+Comes in three forms: [bind mounts](#bind-mount), [named volumes](#named-volume), and [anonymous volumes](#anonymous-volume).
+Without a volume, all data inside a container is lost when it's removed. See [Storage & Volumes](BEST-PRACTICES.md#4-storage--volumes).
 
 ### Watchtower
 
