@@ -15,7 +15,8 @@ jobs:
       - name: Install yamllint
         run: pip install yamllint
       - name: Lint YAML files
-        run: yamllint -d relaxed .
+        run: |
+          yamllint -d '{extends: default, rules: {line-length: {max: 300}, truthy: disable, document-start: disable}}' .
 
   markdown-lint:
     name: Markdown Lint
@@ -56,20 +57,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check for lines exceeding 500 characters
+      - name: Check for lines exceeding 300 characters
         run: |
-          echo "Checking for lines longer than 500 characters..."
+          echo "Checking for lines longer than 300 characters..."
           status=0
           while IFS= read -r -d '' file; do
-            result=$(awk 'length > 500 {printf "  line %d: %d chars\n", NR, length}' "$file")
+            result=$(awk 'length > 300 {printf "  line %d: %d chars\n", NR, length}' "$file")
             if [ -n "$result" ]; then
               echo "FAIL: $file"
               echo "$result"
               status=1
             fi
-          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' \) ! -path './.git/*' -print0)
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' -o -name '*.jsonc' -o -name '.env*' \) ! -path './.git/*' -print0)
           if [ "$status" -eq 0 ]; then
-            echo "PASS: No lines exceed 500 characters."
+            echo "PASS: No lines exceed 300 characters."
           fi
           exit "$status"
 
