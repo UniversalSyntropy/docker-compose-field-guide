@@ -1,10 +1,15 @@
 # Docker Compose Field Guide
 
-A reference for building Docker Compose stacks that are well-structured, security-hardened, and easy to maintain. Aimed at homelabs and self-hosted setups — the kind of environment where you want things done properly but don't have a dedicated ops team.
+> Stop copy-pasting Compose files from Stack Overflow — start with hardened defaults.
+
+A reference for building Docker Compose stacks that are well-structured, security-hardened, and easy to maintain.
+Aimed at homelabs and self-hosted setups — the kind of environment where you want things done properly but don't have a dedicated ops team.
 
 > **Requires:** Docker Engine 24+ with Docker Compose v2 (`docker compose` plugin).
 >
-> **Scope:** Homelab / self-hosted / LAN-facing services. If you're exposing services to the internet, this is a reasonable starting point — but you'll also need a reverse proxy with TLS, rate limiting, and stricter network policies. See the [threat model note](docs/BEST-PRACTICES.md#3-security-hardening).
+> **Scope:** Homelab / self-hosted / LAN-facing services.
+> If you're exposing services to the internet, this is a reasonable starting point — but you'll also need a reverse proxy with TLS, rate limiting, and stricter network policies.
+> See the [threat model note](docs/BEST-PRACTICES.md#3-security-hardening).
 
 ---
 
@@ -22,8 +27,10 @@ A reference for building Docker Compose stacks that are well-structured, securit
 ## What's In Here
 
 - **An annotated [`docker-compose.yml`](docker-compose.yml) template** — copy it into your project. Includes security defaults, log rotation, resource limits, and healthchecks as a starting baseline.
-- **[21 sections of best practices](docs/BEST-PRACTICES.md)** — from [network trust zones](docs/BEST-PRACTICES.md#72-network-isolation-by-trust-zone) and [secrets management](docs/BEST-PRACTICES.md#36-secrets-management) to [USB passthrough](docs/BEST-PRACTICES.md#16-usb--hardware-devices) and [cross-platform gotchas](docs/BEST-PRACTICES.md#15-cross-platform-compatibility). The WSL2/NTFS warning alone will save you hours.
-- **[A troubleshooting guide](docs/TROUBLESHOOTING.md)** — step-by-step [debugging playbook](docs/TROUBLESHOOTING.md#2-debugging-playbook), [decision tree](docs/TROUBLESHOOTING.md#6-troubleshooting-decision-tree), and fixes for orphan containers, port conflicts, and data that "disappears" after a recreate.
+- **[21 sections of best practices](docs/BEST-PRACTICES.md)** — from [network trust zones](docs/BEST-PRACTICES.md#72-network-isolation-by-trust-zone) and [secrets management](docs/BEST-PRACTICES.md#36-secrets-management)
+  to [USB passthrough](docs/BEST-PRACTICES.md#16-usb--hardware-devices) and [cross-platform gotchas](docs/BEST-PRACTICES.md#15-cross-platform-compatibility). The WSL2/NTFS warning alone will save you hours.
+- **[A troubleshooting guide](docs/TROUBLESHOOTING.md)** — step-by-step [debugging playbook](docs/TROUBLESHOOTING.md#2-debugging-playbook),
+  [decision tree](docs/TROUBLESHOOTING.md#6-troubleshooting-decision-tree), and fixes for orphan containers, port conflicts, and data that "disappears" after a recreate.
 - **[A monitoring stack](monitoring/)** — Prometheus, Grafana, Node Exporter, and cAdvisor. A reference config you'll want to adapt to your setup (Node Exporter gives meaningful host metrics on Linux only).
 - **[Helper scripts](scripts/)** — safe resets, hard resets, disk reports, and pruning. So you don't have to remember the flags.
 - **[Glossary](docs/GLOSSARY.md) and [index](docs/INDEX.md)** — look up any term, or find where a topic is discussed across the docs.
@@ -85,6 +92,71 @@ docker compose up -d
 
 ---
 
+## What Hardening Looks Like
+
+A naive Compose service vs the same service with this guide's defaults applied:
+
+<details>
+<summary><strong>Before — common but fragile</strong></summary>
+
+```yaml
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html
+    restart: always
+```
+
+</details>
+
+<details>
+<summary><strong>After — hardened baseline</strong></summary>
+
+```yaml
+services:
+  web:
+    image: nginx:1.27.4                    # Pin to exact version
+    security_opt:
+      - no-new-privileges:true             # Block privilege escalation
+    cap_drop: [ALL]                        # Drop all capabilities
+    cap_add:
+      - NET_BIND_SERVICE                   # Only what's needed for port 80
+    read_only: true                        # Immutable root filesystem
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /run
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html:ro    # Read-only bind mount
+    mem_limit: 128m                        # Prevent OOM killing neighbours
+    cpus: 0.5                              # Prevent CPU starvation
+    pids_limit: 100                        # Prevent fork bombs
+    restart: unless-stopped                # Respect manual stops
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - frontend
+```
+
+</details>
+
+Every directive is explained in the [best practices](docs/BEST-PRACTICES.md).
+The [annotated template](docker-compose.yml) is a copy-paste starting point.
+
+---
+
 ## Helper Scripts
 
 ```bash
@@ -126,6 +198,9 @@ docker compose up -d
 
 ```
 ├── README.md                              ← You are here
+├── CONTRIBUTING.md                        ← How to contribute
+├── SECURITY.md                            ← Security policy
+├── CHANGELOG.md                           ← What changed
 ├── CLAUDE.md                              ← Claude Code project instructions
 ├── AGENTS.md                              ← OpenAI Codex agent instructions
 ├── docker-compose.yml                     ← Annotated template (copy into your project)
@@ -141,6 +216,8 @@ docker compose up -d
 │   └── AGENT-SETUP.md                     ← Multi-agent skill pack setup guide
 ├── .github/
 │   ├── copilot-instructions.md            ← GitHub Copilot repo instructions
+│   ├── ISSUE_TEMPLATE/                    ← Bug report and feature request templates
+│   ├── PULL_REQUEST_TEMPLATE.md           ← PR checklist
 │   └── workflows/validate.yml             ← CI: YAML, Markdown, ShellCheck, line length
 ├── monitoring/
 │   ├── docker-compose.yml                 ← Prometheus + Grafana + exporters stack
@@ -164,7 +241,28 @@ This guide follows the [CIS Docker Benchmark](https://www.cisecurity.org/benchma
 - Use Docker secrets for passwords (not environment variables)
 - Read-only root filesystem where possible
 
-These are **safe defaults for a homelab LAN**. They reduce your attack surface and catch common mistakes. They are not a complete security architecture — if you're exposing services to the internet, you'll need more (reverse proxy, TLS, WAF, network policies). The [security hardening section](docs/BEST-PRACTICES.md#3-security-hardening) explains each control, when to relax it, and how to document exceptions.
+These are **safe defaults for a homelab LAN**. They reduce your attack surface and catch common mistakes.
+They are not a complete security architecture — if you're exposing services to the internet, you'll need more (reverse proxy, TLS, WAF, network policies).
+The [security hardening section](docs/BEST-PRACTICES.md#3-security-hardening) explains each control, when to relax it, and how to document exceptions.
+
+---
+
+## Trust & Limits
+
+This guide is:
+
+- A **hardened starting point** for homelab and self-hosted stacks
+- Based on published standards (CIS Docker Benchmark, OWASP Docker Security)
+- Tested with Docker Engine 24+ and Compose v2 on Linux, macOS, and Windows/WSL2
+
+This guide is **not**:
+
+- A substitute for a security audit
+- Validated for internet-facing production without additional controls (reverse proxy, TLS, WAF)
+- A guarantee — Docker, Compose, and upstream images change; verify against your environment
+- Maintained by a security team — it is a community reference
+
+If you find an error or a gap, [open an issue](https://github.com/UniversalSyntropy/docker-compose-field-guide/issues).
 
 ---
 
@@ -178,7 +276,8 @@ These are **safe defaults for a homelab LAN**. They reduce your attack surface a
 
 ## Contributing
 
-Run `make lint` before pushing — it checks YAML, Markdown, shell scripts, and line length. CI runs the same checks. See [STYLE.md](docs/STYLE.md) for the voice and writing guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run checks, what to include in a PR, and what changes are welcome.
+Voice and style guidelines are in [STYLE.md](docs/STYLE.md).
 
 ## License
 
