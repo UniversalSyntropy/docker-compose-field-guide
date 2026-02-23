@@ -20,8 +20,8 @@ lint: lint-yaml lint-md lint-shell lint-lines compose-check
 lint-yaml:
 	@echo "=== YAML lint ==="
 	@command -v yamllint >/dev/null 2>&1 \
-		&& yamllint -d relaxed . \
-		|| docker run --rm -v "$(CURDIR):/work:ro" -w /work pipelinecomponents/yamllint yamllint -d relaxed .
+		&& yamllint -d '{extends: default, rules: {line-length: {max: 300}, truthy: disable, document-start: disable}}' . \
+		|| docker run --rm -v "$(CURDIR):/work:ro" -w /work pipelinecomponents/yamllint yamllint -d '{extends: default, rules: {line-length: {max: 300}, truthy: disable, document-start: disable}}' .
 
 # ── Markdown ──────────────────────────────────────────────────────────
 lint-md:
@@ -39,17 +39,17 @@ lint-shell:
 
 # ── Giant-line regression ─────────────────────────────────────────────
 lint-lines:
-	@echo "=== Giant-line check (max 500 chars) ==="
+	@echo "=== Giant-line check (max 300 chars) ==="
 	@status=0; \
-	for f in $$(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' \) ! -path './.git/*'); do \
-		result=$$(awk 'length > 500 {printf "  line %d: %d chars\n", NR, length}' "$$f"); \
+	for f in $$(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' -o -name '*.jsonc' -o -name '.env*' \) ! -path './.git/*'); do \
+		result=$$(awk 'length > 300 {printf "  line %d: %d chars\n", NR, length}' "$$f"); \
 		if [ -n "$$result" ]; then \
 			echo "FAIL: $$f"; \
 			echo "$$result"; \
 			status=1; \
 		fi; \
 	done; \
-	if [ "$$status" -eq 0 ]; then echo "PASS: No lines exceed 500 characters."; fi; \
+	if [ "$$status" -eq 0 ]; then echo "PASS: No lines exceed 300 characters."; fi; \
 	exit "$$status"
 
 # ── Compose validation ────────────────────────────────────────────────
