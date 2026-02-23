@@ -1,4 +1,4 @@
-# Docker Compose Field Guide — Project Instructions
+# Docker Compose Field Guide — project instructions
 
 This repo is a comprehensive Docker Compose reference. When working on Docker Compose tasks in this repo or in projects that reference it, follow these standards.
 
@@ -8,7 +8,7 @@ This repo is a comprehensive Docker Compose reference. When working on Docker Co
 - **Environment:** Self-hosted homelab / small-team — LAN-facing, not internet-exposed
 - **This repo contains:** best practices, templates, troubleshooting, monitoring, helper scripts
 
-## Compose Standards
+## Compose standards
 
 Follow these for every compose file:
 
@@ -32,7 +32,7 @@ Follow these for every compose file:
 3. **Patch minimally during debugging** — fix the specific issue, don't rewrite working services
 4. **Test after every change** — `docker compose up -d && docker compose ps`
 
-## Safety Rules
+## Safety rules
 
 - **Warn before `down -v`** — this deletes all project volumes (data loss)
 - **Warn before any `prune` command** — explain what will be removed
@@ -41,7 +41,7 @@ Follow these for every compose file:
 - **Back up before destructive operations**
 - Include rollback notes for risky changes
 
-## Validation Commands
+## Validation commands
 
 ```bash
 docker compose config --quiet          # Syntax check
@@ -51,7 +51,7 @@ docker compose logs --tail=50 <svc>    # Log check
 docker stats --no-stream               # Resource usage
 ```
 
-## Troubleshooting Loop
+## Troubleshooting loop
 
 When something fails, follow this order:
 
@@ -64,11 +64,11 @@ When something fails, follow this order:
 
 See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for the full debugging playbook.
 
-## Key Documentation
+## Key documentation
 
 | Topic | File |
 |-------|------|
-| Best practices (21 sections) | [DOCKER-COMPOSE-BEST-PRACTICES.md](docs/BEST-PRACTICES.md) |
+| Best practices (21 sections) | [Best practices](docs/BEST-PRACTICES.md) |
 | Troubleshooting & debugging | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
 | Docker basics & installation | [DOCKER-BASICS.md](docs/DOCKER-BASICS.md) |
 | Term definitions | [GLOSSARY.md](docs/GLOSSARY.md) |

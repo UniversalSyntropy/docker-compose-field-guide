@@ -1,8 +1,8 @@
-# Docker Compose Field Guide — Agent Instructions
+# Docker Compose Field Guide — agent instructions
 
 This repo is a comprehensive Docker Compose reference. Follow these standards when working on Docker Compose tasks.
 
-## Setup Commands
+## Setup commands
 
 ```bash
 # Validate compose file
@@ -18,7 +18,7 @@ docker compose ps
 docker compose logs --tail=50 <service>
 ```
 
-## Compose Standards
+## Compose standards
 
 - Pin images to exact version tags — never `:latest`
 - No `version:` key (deprecated in Compose v2)
@@ -39,7 +39,7 @@ docker compose logs --tail=50 <service>
 3. Patch minimally during debugging — don't rewrite working services
 4. Test after every change: `docker compose ps`
 
-## Safety — Commands That Need Confirmation
+## Safety — commands that need confirmation
 
 These commands are destructive. Always warn and explain before running:
 
@@ -49,7 +49,7 @@ These commands are destructive. Always warn and explain before running:
 - `docker volume prune` — removes volumes not attached to any container
 - `--force-recreate` — restarts all containers even if config hasn't changed
 
-## Troubleshooting Loop
+## Troubleshooting loop
 
 When something fails, follow this order:
 
@@ -61,13 +61,13 @@ When something fails, follow this order:
 
 Full debugging playbook: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
-## Scaling Rules
+## Scaling rules
 
 - Only scale stateless services
 - Remove `container_name` from anything that might scale
 - Compose is manual `--scale`, not autoscaling
 
-## File Map
+## File map
 
 | What you need | Where to look |
 |---------------|---------------|

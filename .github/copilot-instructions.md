@@ -1,8 +1,8 @@
-# Docker Compose Field Guide — Copilot Instructions
+# Docker Compose Field Guide — Copilot instructions
 
 This repo is a comprehensive Docker Compose reference. Follow these standards when working on Docker Compose tasks.
 
-## Compose Standards
+## Compose standards
 
 - Pin images to exact version tags — never `:latest`
 - No `version:` key (deprecated in Compose v2)
@@ -37,7 +37,7 @@ Follow this order: validate → inspect → logs → minimal patch → revalidat
 
 See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) for the full debugging playbook.
 
-## Documentation Map
+## Documentation map
 
 - Best practices: [DOCKER-COMPOSE-BEST-PRACTICES.md](../docs/BEST-PRACTICES.md)
 - Troubleshooting: [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md)

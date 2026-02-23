@@ -4,13 +4,13 @@ How this repo should sound — and why it matters. Use this when writing new sec
 
 ---
 
-## The Short Version
+## The short version
 
 Write like a helpful colleague who has done this before. Be honest about trade-offs, specific about context, and brief enough that someone scanning at 2am can find what they need.
 
 ---
 
-## Voice Profile
+## Voice profile
 
 | Do | Don't |
 |----|-------|
@@ -40,7 +40,7 @@ It is **not** aimed at:
 
 ---
 
-## Phrasing Rules
+## Phrasing rules
 
 ### Prefer
 
@@ -87,7 +87,7 @@ Every recommendation should make it clear:
 
 ---
 
-## Recurring Phrases to Avoid
+## Recurring phrases to avoid
 
 These phrases weaken trust because they sound like marketing copy or AI filler. Replace them with specifics.
 
@@ -106,7 +106,7 @@ These phrases weaken trust because they sound like marketing copy or AI filler. 
 
 ---
 
-## Tone Benchmarks
+## Tone benchmarks
 
 These repos model specific aspects of the voice we're aiming for. Borrow the *style patterns*, not the content.
 
@@ -121,7 +121,7 @@ These repos model specific aspects of the voice we're aiming for. Borrow the *st
 
 ---
 
-## Checklist for New Content
+## Checklist for new content
 
 Before merging new copy, check:
 
