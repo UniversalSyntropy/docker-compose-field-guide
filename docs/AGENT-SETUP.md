@@ -1,4 +1,4 @@
-# Multi-Agent Skill Pack
+# Multi-agent skill pack
 
 How to use this repo as a shared knowledge base for AI coding agents — Claude Code, GitHub Copilot, OpenAI Codex, Cursor, and others.
 
@@ -6,19 +6,19 @@ How to use this repo as a shared knowledge base for AI coding agents — Claude 
 
 ---
 
-## Table of Contents
+## Table of contents
 
-1. [Why This Repo Works as a Skill Pack](#1-why-this-repo-works-as-a-skill-pack)
-2. [The Core Idea](#2-the-core-idea)
-3. [Tool Mapping](#3-tool-mapping)
-4. [What Goes in the Skill Pack](#4-what-goes-in-the-skill-pack)
-5. [Per-Tool Setup](#5-per-tool-setup)
-6. [Practical Setup Plan](#6-practical-setup-plan)
-7. [Repo Structure for Multi-Agent Support](#7-repo-structure-for-multi-agent-support)
+1. [Why this repo works as a skill pack](#1-why-this-repo-works-as-a-skill-pack)
+2. [The core idea](#2-the-core-idea)
+3. [Tool mapping](#3-tool-mapping)
+4. [What goes in the skill pack](#4-what-goes-in-the-skill-pack)
+5. [Per-tool setup](#5-per-tool-setup)
+6. [Practical setup plan](#6-practical-setup-plan)
+7. [Repo structure for multi-agent support](#7-repo-structure-for-multi-agent-support)
 
 ---
 
-## 1. Why This Repo Works as a Skill Pack
+## 1. Why this repo works as a skill pack
 
 > **In a nutshell:** This repo already contains everything a coding agent needs to work reliably with Docker Compose — standards, examples, troubleshooting workflows, safety rules, and validation commands. Wrapping it as a skill pack just makes that knowledge accessible to the agent automatically.
 
@@ -34,11 +34,11 @@ This repo already has all of that. The skill pack setup just connects it to the 
 
 ---
 
-## 2. The Core Idea
+## 2. The core idea
 
 Use this repo as the **source of truth**, then expose it to each coding agent using that tool's preferred mechanism.
 
-```
+```text
                     ┌─────────────────────────────┐
                     │  This Repo (source of truth) │
                     │  Standards + Examples +       │
@@ -55,7 +55,7 @@ The core content stays the same across tools. Only the delivery format changes.
 
 ---
 
-## 3. Tool Mapping
+## 3. Tool mapping
 
 | Tool | Instruction file | Mechanism | Docs |
 |------|-----------------|-----------|------|
@@ -70,17 +70,17 @@ The core content stays the same across tools. Only the delivery format changes.
 
 ---
 
-## 4. What Goes in the Skill Pack
+## 4. What goes in the skill pack
 
 Keep the core content the same across tools. Here's what every agent instruction file should cover:
 
-### 4.1 Project Scope
+### 4.1 Project scope
 
 - Docker Engine 24+ with Docker Compose v2
 - What's in scope / out of scope
 - Homelab / self-hosted focus
 
-### 4.2 Compose Standards
+### 4.2 Compose standards
 
 - No deprecated `version:` key
 - Avoid `container_name` unless justified
@@ -91,14 +91,14 @@ Keep the core content the same across tools. Here's what every agent instruction
 - Log rotation on every service
 - Resource limits (`mem_limit`, `cpus`, `pids_limit`) on every service
 
-### 4.3 Workflow Rules
+### 4.3 Workflow rules
 
 - Plan first, YAML second
 - Validate before running (`docker compose config`)
 - Patch minimally during debugging — don't rewrite working services
 - Test after every change
 
-### 4.4 Safety Rules
+### 4.4 Safety rules
 
 - Warn before `down -v` (deletes volumes)
 - Warn before any `prune` command
@@ -106,7 +106,7 @@ Keep the core content the same across tools. Here's what every agent instruction
 - Never force-push without confirmation
 - Back up before destructive operations
 
-### 4.5 Validation Commands
+### 4.5 Validation commands
 
 ```bash
 docker compose config --quiet          # Syntax check
@@ -115,7 +115,7 @@ docker compose ps                      # Status check
 docker compose logs --tail=50 <svc>    # Log check
 ```
 
-### 4.6 Troubleshooting Loop
+### 4.6 Troubleshooting loop
 
 Follow this order, every time:
 
@@ -125,7 +125,7 @@ Follow this order, every time:
 4. **Minimal patch** — fix the specific issue, nothing more
 5. **Revalidate** — confirm the fix, check nothing else broke
 
-### 4.7 Scaling Guardrails
+### 4.7 Scaling guardrails
 
 - Only scale stateless services
 - Remove `container_name` from anything that might scale
@@ -133,18 +133,20 @@ Follow this order, every time:
 
 ---
 
-## 5. Per-Tool Setup
+## 5. Per-tool setup
 
 ### 5.1 Claude Code
 
 Claude Code uses `CLAUDE.md` for project instructions and Skills for reusable task behaviours.
 
 **What to do:**
+
 - Add a `CLAUDE.md` in the repo root (included in this repo)
 - Reference the best practices, troubleshooting, and networking docs
 - Optionally create Claude Skills for repeatable tasks (e.g., "design a Compose stack", "debug a restart loop")
 
 **Good split:**
+
 - `CLAUDE.md` → project policy and constraints (always active)
 - Skills → repeatable task workflows (loaded on demand)
 
@@ -155,6 +157,7 @@ Claude Code uses `CLAUDE.md` for project instructions and Skills for reusable ta
 Codex reads `AGENTS.md` files before doing work — it's the direct equivalent of project instructions.
 
 **What to do:**
+
 - Add `AGENTS.md` at the repo root (included in this repo)
 - Keep it concise and operational — Codex works best with concrete instructions
 - Tell Codex which commands are safe to run and which need confirmation
@@ -166,13 +169,14 @@ Codex reads `AGENTS.md` files before doing work — it's the direct equivalent o
 Copilot uses `.github/copilot-instructions.md` for repo-level instructions.
 
 **What to do:**
+
 - Create `.github/copilot-instructions.md` (included in this repo)
 - Optionally add path-specific instructions in `.github/instructions/*.instructions.md`
 - Optionally create custom Copilot agents for focused tasks
 
 **Optional path-specific instructions:**
 
-```
+```text
 .github/instructions/
 ├── examples.instructions.md     # "These are known-good templates"
 ├── scripts.instructions.md      # "These are helper scripts, keep them simple"
@@ -193,24 +197,26 @@ Cursor has both Rules (always-on constraints) and Skills (reusable task workflow
 | **Skills** (dynamic) | Repeatable workflows loaded on demand | "Design a stack from brief", "Debug a failing service", "Harden a compose file" |
 
 **What to do:**
+
 - Put repo policy into `.cursor/rules/` (adapt from `CLAUDE.md` or `AGENTS.md`)
 - Put reusable workflows into Cursor Skills
 - Keep skills small and focused — one clear job each
 
-### 5.5 VS Code & Visual Studio
+### 5.5 VS Code and Visual Studio
 
 Both use Copilot's instruction files — the same files from [5.3](#53-github-copilot) work automatically.
 
 **What to do:**
+
 - Reuse `.github/copilot-instructions.md` (already created)
 - Optionally add `.github/instructions/*.instructions.md` for path-specific guidance
 - File-based instructions are the recommended approach (settings-based options are being deprecated)
 
 ---
 
-## 6. Practical Setup Plan
+## 6. Practical setup plan
 
-### Phase 1 — Shared Base (start here)
+### Phase 1 — Shared base (start here)
 
 Create the core instruction files with the same standards adapted to each tool:
 
@@ -220,7 +226,7 @@ Create the core instruction files with the same standards adapted to each tool:
 | `AGENTS.md` | Codex | Included in this repo |
 | `.github/copilot-instructions.md` | Copilot (GitHub, VS Code, Visual Studio) | Included in this repo |
 
-### Phase 2 — Tool-Specific Optimisation
+### Phase 2 — Tool-specific optimisation
 
 Add when you need them:
 
@@ -229,11 +235,11 @@ Add when you need them:
 - Claude Skills — packaged reusable workflows
 - Custom Copilot agents — focused task agents
 
-### Phase 3 — Skill Pack Packaging (optional)
+### Phase 3 — Skill pack packaging (optional)
 
 If you want to share your skill pack with others or across repos:
 
-```
+```text
 skill-pack/
 ├── README.md                    # What this pack does
 ├── core-principles.md           # Shared standards
@@ -256,11 +262,11 @@ skill-pack/
 
 ---
 
-## 7. Repo Structure for Multi-Agent Support
+## 7. Repo structure for multi-agent support
 
 This repo includes the Phase 1 files. Here's where they sit:
 
-```
+```text
 ├── CLAUDE.md                              ← Claude Code project instructions
 ├── AGENTS.md                              ← OpenAI Codex agent instructions
 ├── docs/
@@ -275,7 +281,7 @@ The instruction files are deliberately concise — they reference the detailed d
 
 ---
 
-## See Also
+## See also
 
 - [Best Practices](BEST-PRACTICES.md) — the standards these agents enforce
 - [Troubleshooting](TROUBLESHOOTING.md) — the debugging workflow agents should follow

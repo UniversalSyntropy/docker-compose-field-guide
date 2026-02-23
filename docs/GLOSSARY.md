@@ -6,6 +6,8 @@ Plain-English definitions for every Docker and Compose term used in this repo. T
 
 ---
 
+## Terms
+
 ### Anonymous volume
 
 A volume Docker creates automatically when a container declares a `VOLUME` in its Dockerfile but no named volume or bind mount is mapped to it. Anonymous volumes get a random ID and are easy to lose track of. Prefer [named volumes](#named-volume) or [bind mounts](#bind-mount) instead.
@@ -13,12 +15,14 @@ A volume Docker creates automatically when a container declares a `VOLUME` in it
 ### Bind mount
 
 A direct mapping from a folder on your host machine into a container. You control the exact path on both sides. Good for config files and data you want to access directly from the host.
+
 ```yaml
 volumes:
   - /mnt/data/app:/app/data        # host path : container path
   - ./config.yml:/app/config.yml:ro  # relative path, read-only
 ```
-See [Storage & Volumes](BEST-PRACTICES.md#4-storage--volumes).
+
+See [Storage & Volumes](BEST-PRACTICES.md#4-storage-and-volumes).
 
 ### Bridge network
 
@@ -66,7 +70,7 @@ An image with no tag — usually a leftover from a rebuild where the old layers 
 
 ### depends_on
 
-A Compose key that controls startup order. With `condition: service_healthy`, Compose waits for the dependency's [healthcheck](#healthcheck) to pass before starting the dependent service. See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks--dependencies).
+A Compose key that controls startup order. With `condition: service_healthy`, Compose waits for the dependency's [healthcheck](#healthcheck) to pass before starting the dependent service. See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks-and-dependencies).
 
 ### Docker Compose
 
@@ -94,11 +98,11 @@ The Unix socket file (`/var/run/docker.sock`) that provides API access to the Do
 
 ### Environment variable
 
-A key-value pair passed to a container at startup. Used for non-sensitive configuration. Defined in the Compose file (`environment:`), an `.env` file, or via CLI. See [Environment & Configuration](BEST-PRACTICES.md#6-environment--configuration).
+A key-value pair passed to a container at startup. Used for non-sensitive configuration. Defined in the Compose file (`environment:`), an `.env` file, or via CLI. See [Environment & Configuration](BEST-PRACTICES.md#6-environment-and-configuration).
 
 ### Extension field
 
-A YAML key prefixed with `x-` in a Compose file. Compose ignores these keys, making them useful for defining reusable blocks with [YAML anchors](#yaml-anchor). Example: `x-logging`, `x-security`. See [YAML Anchors & Extension Fields](BEST-PRACTICES.md#12-yaml-anchors--extension-fields).
+A YAML key prefixed with `x-` in a Compose file. Compose ignores these keys, making them useful for defining reusable blocks with [YAML anchors](#yaml-anchor). Example: `x-logging`, `x-security`. See [YAML Anchors & Extension Fields](BEST-PRACTICES.md#12-yaml-anchors-and-extension-fields).
 
 ### Grafana
 
@@ -108,7 +112,7 @@ An open-source dashboard and visualisation platform. Connects to data sources li
 
 A command that runs periodically inside a container to verify the service is working.
 If the check fails repeatedly, the container is marked **unhealthy**.
-Other services can wait for healthy status using [depends_on](#depends_on). See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks--dependencies).
+Other services can wait for healthy status using [depends_on](#depends_on). See [Healthchecks & Dependencies](BEST-PRACTICES.md#9-healthchecks-and-dependencies).
 
 ### Host network
 
@@ -136,7 +140,7 @@ A network driver that gives a container its own IP address on your physical LAN 
 
 ### Named volume
 
-A Docker-managed storage volume with a human-readable name. Persists across container restarts and recreations. Better performance than [bind mounts](#bind-mount) on macOS/Windows. See [Storage & Volumes](BEST-PRACTICES.md#4-storage--volumes).
+A Docker-managed storage volume with a human-readable name. Persists across container restarts and recreations. Better performance than [bind mounts](#bind-mount) on macOS/Windows. See [Storage & Volumes](BEST-PRACTICES.md#4-storage-and-volumes).
 
 ### Node Exporter
 
@@ -211,7 +215,7 @@ Per-container resource limits for things like open files (`nofile`), processes (
 
 Persistent storage that survives container restarts and recreations.
 Comes in three forms: [bind mounts](#bind-mount), [named volumes](#named-volume), and [anonymous volumes](#anonymous-volume).
-Without a volume, all data inside a container is lost when it's removed. See [Storage & Volumes](BEST-PRACTICES.md#4-storage--volumes).
+Without a volume, all data inside a container is lost when it's removed. See [Storage & Volumes](BEST-PRACTICES.md#4-storage-and-volumes).
 
 ### Watchtower
 
@@ -219,11 +223,11 @@ A container that monitors your running containers and automatically updates them
 
 ### YAML anchor
 
-A YAML feature (`&name` to define, `*name` to reference) that lets you reuse configuration blocks. Combined with [extension fields](#extension-field) (`x-` prefix) in Compose files to avoid repetition. See [YAML Anchors & Extension Fields](BEST-PRACTICES.md#12-yaml-anchors--extension-fields).
+A YAML feature (`&name` to define, `*name` to reference) that lets you reuse configuration blocks. Combined with [extension fields](#extension-field) (`x-` prefix) in Compose files to avoid repetition. See [YAML Anchors & Extension Fields](BEST-PRACTICES.md#12-yaml-anchors-and-extension-fields).
 
 ---
 
-## AI Agent Terms
+## AI agent terms
 
 ### AGENTS.md
 

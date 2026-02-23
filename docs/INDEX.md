@@ -6,7 +6,7 @@ A topical index covering every concept across all documents in this repo. Use th
 
 ---
 
-## Getting Started
+## Getting started
 
 - What is Docker — [DB: What Is Docker?](DOCKER-BASICS.md#what-is-docker)
 - What is Docker Compose — [DB: What Is Docker Compose?](DOCKER-BASICS.md#what-is-docker-compose)
@@ -16,10 +16,10 @@ A topical index covering every concept across all documents in this repo. Use th
 - Installing Docker (Linux, macOS, Windows) — [DB: Installing Docker](DOCKER-BASICS.md#installing-docker)
 - Alternative runtimes (Podman, Colima, OrbStack, etc.) — [DB: Alternative Container Runtimes](DOCKER-BASICS.md#alternative-container-runtimes)
 
-## Compose File
+## Compose file
 
 - File organisation (top-level keys) — [BP: 1.1](BEST-PRACTICES.md#11-file-organisation)
-- YAML anchors & extension fields — [BP: 1.2](BEST-PRACTICES.md#12-yaml-anchors--extension-fields) | [GL: YAML anchor](GLOSSARY.md#yaml-anchor) | [GL: Extension field](GLOSSARY.md#extension-field)
+- YAML anchors & extension fields — [BP: 1.2](BEST-PRACTICES.md#12-yaml-anchors-and-extension-fields) | [GL: YAML anchor](GLOSSARY.md#yaml-anchor) | [GL: Extension field](GLOSSARY.md#extension-field)
 - Profiles — [BP: 1.3](BEST-PRACTICES.md#13-profiles) | [GL: Profile](GLOSSARY.md#profile)
 - Compose version key — [BP: 1.4](BEST-PRACTICES.md#14-compose-version)
 - Annotated template — [docker-compose.yml](../docker-compose.yml)
@@ -54,7 +54,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Pen test readiness — [BP: 17](BEST-PRACTICES.md#17-penetration-testing-readiness)
 - Daemon-level hardening — [BP: 17.7](BEST-PRACTICES.md#177-additional-hardening)
 
-## Storage & Volumes
+## Storage and volumes
 
 - Bind mounts vs named volumes — [BP: 4.1](BEST-PRACTICES.md#41-bind-mounts-vs-named-volumes) | [GL: Bind mount](GLOSSARY.md#bind-mount) | [GL: Named volume](GLOSSARY.md#named-volume)
 - Volume mount patterns — [BP: 4.2](BEST-PRACTICES.md#42-volume-mount-patterns)
@@ -66,7 +66,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - tmpfs — [GL: tmpfs](GLOSSARY.md#tmpfs)
 - Anonymous volumes — [GL: Anonymous volume](GLOSSARY.md#anonymous-volume)
 
-## Host Filesystem
+## Host filesystem
 
 - Linux setup (ext4, XFS, fstab) — [BP: 5.1](BEST-PRACTICES.md#51-linux)
 - macOS (VirtioFS, performance) — [BP: 5.2](BEST-PRACTICES.md#52-macos)
@@ -74,7 +74,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - FreeBSD / Unix — [BP: 5.4](BEST-PRACTICES.md#54-freebsd--unix)
 - Raspberry Pi / SBC notes — [BP: 5.1](BEST-PRACTICES.md#51-linux)
 
-## Environment & Configuration
+## Environment and configuration
 
 - The .env file — [BP: 6.1](BEST-PRACTICES.md#61-the-env-file) | [GL: Environment variable](GLOSSARY.md#environment-variable)
 - Variable precedence — [BP: 6.2](BEST-PRACTICES.md#62-environment-variable-precedence)
@@ -94,7 +94,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Connectivity debugging — [TB: Step 7](TROUBLESHOOTING.md#step-7-check-networking)
 - Port conflicts — [TB: 1.5](TROUBLESHOOTING.md#15-port-conflicts-address-already-in-use) | [TB: Common Errors](TROUBLESHOOTING.md#port-is-already-allocated)
 
-## Resource Limits
+## Resource limits
 
 - Mandatory limits (mem_limit, cpus, pids_limit) — [BP: 8.1](BEST-PRACTICES.md#81-mandatory-limits)
 - Sizing guidelines — [BP: 8.2](BEST-PRACTICES.md#82-sizing-guidelines)
@@ -103,7 +103,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Ulimits — [BP: 8.5](BEST-PRACTICES.md#85-ulimits) | [GL: Ulimits](GLOSSARY.md#ulimits)
 - OOM kills (exit code 137) — [GL: OOM](GLOSSARY.md#oom-out-of-memory) | [TB: Step 5](TROUBLESHOOTING.md#step-5-inspect-container-state)
 
-## Healthchecks & Dependencies
+## Healthchecks and dependencies
 
 - Healthcheck configuration — [BP: 9.1](BEST-PRACTICES.md#91-healthcheck-configuration) | [GL: Healthcheck](GLOSSARY.md#healthcheck)
 - Healthcheck patterns by service type — [BP: 9.2](BEST-PRACTICES.md#92-healthcheck-patterns-by-service-type)
@@ -119,14 +119,14 @@ A topical index covering every concept across all documents in this repo. Use th
 - Log drivers (json-file, local, syslog, fluentd) — [BP: 10.3](BEST-PRACTICES.md#103-log-drivers)
 - Checking logs for errors — [TB: Step 4](TROUBLESHOOTING.md#step-4-check-logs)
 
-## Graceful Shutdown
+## Graceful shutdown
 
 - Stop grace period — [BP: 11.1](BEST-PRACTICES.md#111-stop-grace-period) | [GL: stop_grace_period](GLOSSARY.md#stop_grace_period)
 - Stop signal — [BP: 11.2](BEST-PRACTICES.md#112-stop-signal)
 - Init process (tini) — [BP: 11.3](BEST-PRACTICES.md#113-init-process-init-true) | [GL: init](GLOSSARY.md#init-tini)
 - Signal handling in Dockerfiles — [BP: 11.4](BEST-PRACTICES.md#114-signal-handling-in-dockerfiles)
 
-## Updates & Maintenance
+## Updates and maintenance
 
 - Watchtower (automatic updates) — [BP: 12.1](BEST-PRACTICES.md#121-automatic-updates-with-watchtower) | [GL: Watchtower](GLOSSARY.md#watchtower)
 - Selective updates (opt-in/opt-out) — [BP: 12.2](BEST-PRACTICES.md#122-selective-updates)
@@ -134,7 +134,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Rollback — [BP: 12.4](BEST-PRACTICES.md#124-rollback)
 - Version pinning policy — [BP: 18.4](BEST-PRACTICES.md#184-version-pinning-policy)
 
-## Backup & Recovery
+## Backup and recovery
 
 - What to protect (priority, RPO) — [BP: 13.1](BEST-PRACTICES.md#131-what-to-protect)
 - Backup tiers (git, tar, database dumps, full disk) — [BP: 13.2](BEST-PRACTICES.md#132-backup-tiers)
@@ -150,14 +150,14 @@ A topical index covering every concept across all documents in this repo. Use th
 - Prometheus config — [monitoring/prometheus/prometheus.yml](../monitoring/prometheus/prometheus.yml)
 - Full stack example — [monitoring/docker-compose.yml](../monitoring/docker-compose.yml)
 
-## Cross-Platform
+## Cross-platform
 
 - Feature matrix (Linux vs macOS vs Windows) — [BP: 15.1](BEST-PRACTICES.md#151-feature-matrix)
 - What works everywhere — [BP: 15.2](BEST-PRACTICES.md#152-what-works-everywhere)
 - Linux-only features — [BP: 15.3](BEST-PRACTICES.md#153-linux-only-for-production)
 - Works on Linux, broken on Docker Desktop — [TB: 1.6](TROUBLESHOOTING.md#16-works-on-linux-brokenslow-on-docker-desktop)
 - Alternative runtimes — [DB: Alternative Container Runtimes](DOCKER-BASICS.md#alternative-container-runtimes)
-- USB / hardware devices — [BP: 16](BEST-PRACTICES.md#16-usb--hardware-devices)
+- USB / hardware devices — [BP: 16](BEST-PRACTICES.md#16-usb-and-hardware-devices)
 
 ## Troubleshooting
 
@@ -173,7 +173,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Exit codes (0, 1, 137, 139, 143) — [TB: Step 5](TROUBLESHOOTING.md#step-5-inspect-container-state)
 - Prevention best practices — [TB: 7](TROUBLESHOOTING.md#7-prevention-best-practices)
 
-## Cleanup & Disk Management
+## Cleanup and disk management
 
 - Cleanup levels (safe → aggressive) — [TB: 4](TROUBLESHOOTING.md#4-cleanup-and-prune-strategy) | [GL: Prune](GLOSSARY.md#prune)
 - Reset recipes (safe, rebuild, hard, global) — [TB: 5](TROUBLESHOOTING.md#5-reset-recipes)
@@ -182,11 +182,11 @@ A topical index covering every concept across all documents in this repo. Use th
 - Hard reset script — [scripts/hard-reset.sh](../scripts/hard-reset.sh)
 - Prune script — [scripts/prune-unused.sh](../scripts/prune-unused.sh)
 
-## LLM Workflows
+## LLM workflows
 
-- Stack design prompts — [BP: 19.1](BEST-PRACTICES.md#191-phase-1--requirements--design)
+- Stack design prompts — [BP: 19.1](BEST-PRACTICES.md#191-phase-1--requirements-and-design)
 - Compose file critique prompts — [BP: 19.2](BEST-PRACTICES.md#192-phase-2--compose-file-critique)
-- Deployment & debugging prompts — [BP: 19.3](BEST-PRACTICES.md#193-phase-3--deployment--debugging)
+- Deployment & debugging prompts — [BP: 19.3](BEST-PRACTICES.md#193-phase-3--deployment-and-debugging)
 - Testing prompts — [BP: 19.4](BEST-PRACTICES.md#194-phase-4--testing)
 - Maintenance prompts — [BP: 19.5](BEST-PRACTICES.md#195-phase-5--ongoing-maintenance)
 
@@ -196,7 +196,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - Image pre-adoption checklist — [BP: 18.2](BEST-PRACTICES.md#182-pre-adoption-checklist)
 - Application security scorecard — [BP: 18.6](BEST-PRACTICES.md#186-application-security-scorecard)
 
-## AI Agent Integration
+## AI agent integration
 
 - Why this repo works as a skill pack — [AGENT-SETUP: 1](AGENT-SETUP.md#1-why-this-repo-works-as-a-skill-pack)
 - Tool mapping (Claude, Codex, Copilot, Cursor) — [AGENT-SETUP: 3](AGENT-SETUP.md#3-tool-mapping)
@@ -206,11 +206,11 @@ A topical index covering every concept across all documents in this repo. Use th
 - OpenAI Codex setup — [AGENT-SETUP: 5.2](AGENT-SETUP.md#52-openai-codex) | [AGENTS.md](../AGENTS.md)
 - GitHub Copilot setup — [AGENT-SETUP: 5.3](AGENT-SETUP.md#53-github-copilot) | [.github/copilot-instructions.md](../.github/copilot-instructions.md)
 - Cursor setup — [AGENT-SETUP: 5.4](AGENT-SETUP.md#54-cursor)
-- VS Code & Visual Studio setup — [AGENT-SETUP: 5.5](AGENT-SETUP.md#55-vs-code--visual-studio)
+- VS Code and Visual Studio setup — [AGENT-SETUP: 5.5](AGENT-SETUP.md#55-vs-code-and-visual-studio)
 - Practical setup plan (phased) — [AGENT-SETUP: 6](AGENT-SETUP.md#6-practical-setup-plan)
 - LLM prompt templates — [BP: 19](BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow)
 
-## Contributing & Style
+## Contributing and style
 
 - Voice and style guide — [STYLE.md](STYLE.md)
 - Phrase replacements (avoid → prefer) — [STYLE.md: Phrasing Rules](STYLE.md#phrasing-rules)

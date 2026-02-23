@@ -1,9 +1,6 @@
 # Docker Compose Field Guide
 
-> Stop copy-pasting Compose files from Stack Overflow — start with hardened defaults.
-
-A reference for building Docker Compose stacks that are well-structured, security-hardened, and easy to maintain.
-Aimed at homelabs and self-hosted setups — the kind of environment where you want things done properly but don't have a dedicated ops team.
+A reference for building Docker Compose stacks that are well-structured, security-hardened, and easy to maintain. Aimed at homelabs and self-hosted setups.
 
 > **Requires:** Docker Engine 24+ with Docker Compose v2 (`docker compose` plugin).
 >
@@ -13,22 +10,28 @@ Aimed at homelabs and self-hosted setups — the kind of environment where you w
 
 ---
 
-## Who This Is For
+## Who this is for
 
 - You run a homelab, NAS, Pi, or small server
 - You know basic Linux and have run at least one container before
 - You want to do things properly — security, backups, log rotation — without reading the CIS Benchmark end-to-end
 - You're tired of Compose files cobbled together from Stack Overflow snippets
 
-**Not the target audience:** Complete Docker beginners (start with [DOCKER-BASICS.md](docs/DOCKER-BASICS.md)), large-scale production, Kubernetes, or Swarm deployments.
+---
+
+## What this is not
+
+- A beginner tutorial — if you've never used Docker, start with [DOCKER-BASICS.md](docs/DOCKER-BASICS.md)
+- A guide for large-scale production, Kubernetes, or Swarm deployments
+- A drop-in solution — you'll need to adapt the template to your services
 
 ---
 
-## What's In Here
+## What's included
 
 - **An annotated [`docker-compose.yml`](docker-compose.yml) template** — copy it into your project. Includes security defaults, log rotation, resource limits, and healthchecks as a starting baseline.
 - **[21 sections of best practices](docs/BEST-PRACTICES.md)** — from [network trust zones](docs/BEST-PRACTICES.md#72-network-isolation-by-trust-zone) and [secrets management](docs/BEST-PRACTICES.md#36-secrets-management)
-  to [USB passthrough](docs/BEST-PRACTICES.md#16-usb--hardware-devices) and [cross-platform gotchas](docs/BEST-PRACTICES.md#15-cross-platform-compatibility). The WSL2/NTFS warning alone will save you hours.
+  to [USB passthrough](docs/BEST-PRACTICES.md#16-usb-and-hardware-devices) and [cross-platform gotchas](docs/BEST-PRACTICES.md#15-cross-platform-compatibility). The WSL2/NTFS warning alone will save you hours.
 - **[A troubleshooting guide](docs/TROUBLESHOOTING.md)** — step-by-step [debugging playbook](docs/TROUBLESHOOTING.md#2-debugging-playbook),
   [decision tree](docs/TROUBLESHOOTING.md#6-troubleshooting-decision-tree), and fixes for orphan containers, port conflicts, and data that "disappears" after a recreate.
 - **[A monitoring stack](monitoring/)** — Prometheus, Grafana, Node Exporter, and cAdvisor. A reference config you'll want to adapt to your setup (Node Exporter gives meaningful host metrics on Linux only).
@@ -49,7 +52,7 @@ Aimed at homelabs and self-hosted setups — the kind of environment where you w
 
 ---
 
-## Where to Start
+## Where to start
 
 | If you want to... | Go here |
 |--------------------|---------|
@@ -65,7 +68,7 @@ Aimed at homelabs and self-hosted setups — the kind of environment where you w
 
 ---
 
-## Quick Start
+## Quick start
 
 ```bash
 # 1. Clone and use as a reference
@@ -86,13 +89,18 @@ docker compose config --quiet
 
 # 5. Deploy
 docker compose up -d
+
+# 6. Verify
+docker compose ps
 ```
+
+All containers should show status "Up" or "healthy".
 
 > The template is a **starting point**, not a drop-in solution. You'll need to swap in your own images, volumes, and secrets. The annotations explain what each block does and why.
 
 ---
 
-## What Hardening Looks Like
+## What hardening looks like
 
 A naive Compose service vs the same service with this guide's defaults applied:
 
@@ -157,7 +165,7 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 
 ---
 
-## Helper Scripts
+## Helper scripts
 
 ```bash
 # Restart a stack without losing data
@@ -176,27 +184,27 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 
 ---
 
-## Best Practices — Topics Covered
+## Best practices — topics covered
 
 | # | Topic | # | Topic |
 |---|-------|---|-------|
 | 1 | [Compose File Structure](docs/BEST-PRACTICES.md#1-compose-file-structure) | 12 | [Update Management](docs/BEST-PRACTICES.md#12-update-management) |
-| 2 | [Image Management](docs/BEST-PRACTICES.md#2-image-management) | 13 | [Backup & Disaster Recovery](docs/BEST-PRACTICES.md#13-backup--disaster-recovery) |
+| 2 | [Image Management](docs/BEST-PRACTICES.md#2-image-management) | 13 | [Backup & Disaster Recovery](docs/BEST-PRACTICES.md#13-backup-and-disaster-recovery) |
 | 3 | [Security Hardening](docs/BEST-PRACTICES.md#3-security-hardening) | 14 | [Monitoring](docs/BEST-PRACTICES.md#14-monitoring) |
-| 4 | [Storage & Volumes](docs/BEST-PRACTICES.md#4-storage--volumes) | 15 | [Cross-Platform Compatibility](docs/BEST-PRACTICES.md#15-cross-platform-compatibility) |
-| 5 | [Host Filesystem Setup](docs/BEST-PRACTICES.md#5-host-filesystem-setup) | 16 | [USB & Hardware Devices](docs/BEST-PRACTICES.md#16-usb--hardware-devices) |
-| 6 | [Environment & Configuration](docs/BEST-PRACTICES.md#6-environment--configuration) | 17 | [Penetration Testing Readiness](docs/BEST-PRACTICES.md#17-penetration-testing-readiness) |
-| 7 | [Networking](docs/BEST-PRACTICES.md#7-networking) | 18 | [Container Source Verification](docs/BEST-PRACTICES.md#18-container-source-verification--supply-chain-security) |
+| 4 | [Storage & Volumes](docs/BEST-PRACTICES.md#4-storage-and-volumes) | 15 | [Cross-Platform Compatibility](docs/BEST-PRACTICES.md#15-cross-platform-compatibility) |
+| 5 | [Host Filesystem Setup](docs/BEST-PRACTICES.md#5-host-filesystem-setup) | 16 | [USB & Hardware Devices](docs/BEST-PRACTICES.md#16-usb-and-hardware-devices) |
+| 6 | [Environment & Configuration](docs/BEST-PRACTICES.md#6-environment-and-configuration) | 17 | [Penetration Testing Readiness](docs/BEST-PRACTICES.md#17-penetration-testing-readiness) |
+| 7 | [Networking](docs/BEST-PRACTICES.md#7-networking) | 18 | [Container Source Verification](docs/BEST-PRACTICES.md#18-container-source-verification-and-supply-chain-security) |
 | 8 | [Resource Limits](docs/BEST-PRACTICES.md#8-resource-limits) | 19 | [LLM-Assisted Workflow](docs/BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow) |
-| 9 | [Healthchecks & Dependencies](docs/BEST-PRACTICES.md#9-healthchecks--dependencies) | 20 | [Checklist for New Services](docs/BEST-PRACTICES.md#20-checklist-for-new-services) |
+| 9 | [Healthchecks & Dependencies](docs/BEST-PRACTICES.md#9-healthchecks-and-dependencies) | 20 | [Checklist for New Services](docs/BEST-PRACTICES.md#20-checklist-for-new-services) |
 | 10 | [Logging](docs/BEST-PRACTICES.md#10-logging) | 21 | [References](docs/BEST-PRACTICES.md#21-references) |
 | 11 | [Graceful Shutdown](docs/BEST-PRACTICES.md#11-graceful-shutdown) | | |
 
 ---
 
-## Repo Structure
+## Repo structure
 
-```
+```text
 ├── README.md                              ← You are here
 ├── CONTRIBUTING.md                        ← How to contribute
 ├── SECURITY.md                            ← Security policy
@@ -231,7 +239,7 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 
 ---
 
-## Security Approach
+## Security approach
 
 This guide follows the [CIS Docker Benchmark](https://www.cisecurity.org/benchmark/docker) and [OWASP Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html) as baselines. The defaults are:
 
@@ -247,7 +255,7 @@ The [security hardening section](docs/BEST-PRACTICES.md#3-security-hardening) ex
 
 ---
 
-## Trust & Limits
+## Trust and limits
 
 This guide is:
 

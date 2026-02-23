@@ -1,4 +1,4 @@
-# Docker & Docker Compose — Quick Start Guide
+# Docker and Docker Compose — quick start guide
 
 A plain-English introduction to Docker and Docker Compose for people setting up their first stack.
 If you already know what containers are, skip to [Docker Compose](#what-is-docker-compose) or go straight to the [best practices](BEST-PRACTICES.md).
@@ -6,30 +6,31 @@ See also the [glossary](GLOSSARY.md) for quick definitions of any term.
 
 ---
 
-## Table of Contents
+## Table of contents
 
-1. [What Is Docker?](#what-is-docker)
-2. [What Problem Does It Solve?](#what-problem-does-it-solve)
-3. [What Is Docker Compose?](#what-is-docker-compose)
-4. [Core Concepts](#core-concepts)
-5. [What a Typical Stack Looks Like](#what-a-typical-stack-looks-like)
-6. [Quick Start Workflow](#quick-start-workflow)
+1. [What is Docker?](#what-is-docker)
+2. [What problem does it solve?](#what-problem-does-it-solve)
+3. [What is Docker Compose?](#what-is-docker-compose)
+4. [Core concepts](#core-concepts)
+5. [What a typical stack looks like](#what-a-typical-stack-looks-like)
+6. [Quick start workflow](#quick-start-workflow)
 7. [Installing Docker](#installing-docker)
-8. [Alternative Container Runtimes](#alternative-container-runtimes)
-9. [Which Option Should I Choose?](#which-option-should-i-choose)
-10. [Official Resources](#official-resources)
+8. [Alternative container runtimes](#alternative-container-runtimes)
+9. [Which option should I choose?](#which-option-should-i-choose)
+10. [Official resources](#official-resources)
 
 ---
 
-## What Is Docker?
+## What is Docker?
 
 Docker is a platform for running applications in **containers** — lightweight, isolated environments that package your app together with everything it needs (code, libraries, config, runtime). A container is like a tiny purpose-built machine that runs one service.
 
 **Key mental model:**
+
 - An **image** is a template (like a recipe)
 - A **container** is a running instance of that image (like a dish made from the recipe)
 
-## What Problem Does It Solve?
+## What problem does it solve?
 
 Without containers, people regularly hit:
 
@@ -44,7 +45,7 @@ Without containers, people regularly hit:
 
 Docker fixes this by making the runtime environment **repeatable and portable**. If it runs in the container, it runs the same way everywhere.
 
-## What Is Docker Compose?
+## What is Docker Compose?
 
 Docker Compose is the tool for defining and running **multi-container applications** using a single YAML file. Instead of manually running separate commands for each service, you describe your entire stack once and run:
 
@@ -55,11 +56,12 @@ docker compose up -d
 **What Compose fixes:** the "too many commands / too many moving parts" problem. Instead of manually creating networks, volumes, environment variables, and startup order for each container, you define it all in one file.
 
 **Key idea:**
+
 - **Docker** = container runtime + image tooling
 - **Compose** = orchestration for local and small deployments using a YAML file
 - Compose is not just a shortcut — it becomes your **source of truth** for how a stack runs
 
-## Core Concepts
+## Core concepts
 
 ### Image
 
@@ -109,11 +111,11 @@ A whole stack of services managed together. Compose groups all resources (contai
 
 > **Gotcha:** If you run the same compose file from a different directory (or with a different `-p` flag), Compose treats it as a separate project and creates duplicate containers. This is the #1 cause of "phantom containers" and port conflicts.
 
-## What a Typical Stack Looks Like
+## What a typical stack looks like
 
 Most Docker Compose stacks follow a pattern like this:
 
-```
+```text
                     ┌─────────────┐
                     │   proxy     │  ← Reverse proxy (Nginx, Traefik, Caddy)
                     │  :80/:443   │
@@ -137,6 +139,7 @@ Most Docker Compose stacks follow a pattern like this:
 ```
 
 Common components:
+
 - **App / API** — your application
 - **Database** — PostgreSQL, MySQL, MongoDB
 - **Cache** — Redis, Memcached
@@ -144,7 +147,7 @@ Common components:
 - **Worker** — background job processors
 - **Monitoring** — Prometheus, Grafana
 
-## Quick Start Workflow
+## Quick start workflow
 
 ```bash
 # 1. Install Docker (see next section)
@@ -212,10 +215,10 @@ Alternatives: [Colima](#3-colima-macos--linux-cli-first), [OrbStack](#4-orbstack
 Docker Desktop with WSL2 backend — download from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/). Compose is included.
 
 > **Important:** Store Docker data on the WSL2 filesystem (`/home/...`), **not** on NTFS mounts (`/mnt/c/`). NTFS via 9P is extremely slow and causes permission issues. See [Section 5.3](BEST-PRACTICES.md#53-windows) for details.
-
+>
 > **Note:** Docker Desktop has commercial subscription terms for larger organisations (>250 employees or >$10M revenue). See Docker's pricing page for current terms.
 
-## Alternative Container Runtimes
+## Alternative container runtimes
 
 Docker Desktop is not the only way to run containers. Here are the main alternatives:
 
@@ -268,7 +271,7 @@ Provides Linux VMs with automatic file sharing and port forwarding. Often used a
 - **Good for:** users who want a flexible Linux VM base for custom setups
 - **Docs:** [lima-vm.io](https://lima-vm.io/)
 
-## Which Option Should I Choose?
+## Which option should I choose?
 
 | If you are... | Start with |
 |---------------|-----------|
@@ -278,9 +281,10 @@ Provides Linux VMs with automatic file sharing and port forwarding. Often used a
 | Advanced / containerd-native | **nerdctl + containerd** |
 | Building a custom setup | **Lima** + your chosen runtime |
 
-## Official Resources
+## Official resources
 
 **Docker:**
+
 - [Docker overview ("What is Docker?")](https://docs.docker.com/get-started/docker-overview/)
 - [Docker Get Started tutorial](https://docs.docker.com/get-started/)
 - [Docker Compose overview](https://docs.docker.com/compose/)
@@ -290,6 +294,7 @@ Provides Linux VMs with automatic file sharing and port forwarding. Often used a
 - [Docker Desktop](https://docs.docker.com/desktop/)
 
 **Alternatives:**
+
 - [Podman](https://podman.io/) / [Podman Desktop](https://podman-desktop.io/)
 - [Rancher Desktop](https://rancherdesktop.io/)
 - [Colima](https://github.com/abiosoft/colima)
@@ -299,7 +304,7 @@ Provides Linux VMs with automatic file sharing and port forwarding. Often used a
 
 ---
 
-## Next Steps
+## Next steps
 
 - Ready to build a stack? Follow the [best practices guide](BEST-PRACTICES.md)
 - Something broken? See the [troubleshooting guide](TROUBLESHOOTING.md)

@@ -20,6 +20,10 @@
 
     // MD041 — first line must be a top-level heading. True for docs, but
     // some files start with a comment or YAML front-matter.
-    "MD041": false
+    "MD041": false,
+
+    // MD060 — table column style. Disabled: inconsistent across existing
+    // tables and auto-fix changes formatting unnecessarily.
+    "MD060": false
   }
 }

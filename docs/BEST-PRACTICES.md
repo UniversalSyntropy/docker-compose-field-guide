@@ -1,4 +1,4 @@
-# Docker Compose Best Practices
+# Docker Compose best practices
 
 A structured reference covering every element of a Docker Compose stack — security, storage, networking, resource limits, backups, monitoring, and cross-platform setup. Designed as a reusable foundation you can adapt to any project.
 
@@ -7,46 +7,46 @@ A structured reference covering every element of a Docker Compose stack — secu
 > **Compatibility:** This document targets **Docker Engine 24+** with the **Docker Compose v2** plugin (`docker compose`).
 > Some runtime keys (`mem_limit`, `cpus`, `pids_limit`) are Docker-specific and may behave differently in Podman Compose or Docker Swarm.
 > The legacy Python-based `docker-compose` (v1) is deprecated and not covered.
-
+>
 > **Threat model:** This guide assumes a **self-hosted homelab or small-team environment** — services are LAN-facing, not directly exposed to the internet.
 > For internet-facing production, add a reverse proxy with TLS, WAF, rate limiting, and stricter network policies.
 > The security hardening here is a strong baseline, not a substitute for a full security architecture.
-
+>
 > **New to Docker?** Start with [DOCKER-BASICS.md](DOCKER-BASICS.md) for an introduction to Docker, Compose, and alternative container runtimes. See the [glossary](GLOSSARY.md) for quick definitions of any term, or the [index](INDEX.md) to find where a topic is covered.
 
 ---
 
-## Table of Contents
+## Table of contents
 
-1. [Compose File Structure](#1-compose-file-structure)
-2. [Image Management](#2-image-management)
-3. [Security Hardening](#3-security-hardening)
-4. [Storage & Volumes](#4-storage--volumes)
-5. [Host Filesystem Setup](#5-host-filesystem-setup)
-6. [Environment & Configuration](#6-environment--configuration)
+1. [Compose file structure](#1-compose-file-structure)
+2. [Image management](#2-image-management)
+3. [Security hardening](#3-security-hardening)
+4. [Storage and volumes](#4-storage-and-volumes)
+5. [Host filesystem setup](#5-host-filesystem-setup)
+6. [Environment and configuration](#6-environment-and-configuration)
 7. [Networking](#7-networking)
-8. [Resource Limits](#8-resource-limits)
-9. [Healthchecks & Dependencies](#9-healthchecks--dependencies)
+8. [Resource limits](#8-resource-limits)
+9. [Healthchecks and dependencies](#9-healthchecks-and-dependencies)
 10. [Logging](#10-logging)
-11. [Graceful Shutdown](#11-graceful-shutdown)
-12. [Update Management](#12-update-management)
-13. [Backup & Disaster Recovery](#13-backup--disaster-recovery)
+11. [Graceful shutdown](#11-graceful-shutdown)
+12. [Update management](#12-update-management)
+13. [Backup and disaster recovery](#13-backup-and-disaster-recovery)
 14. [Monitoring](#14-monitoring)
-15. [Cross-Platform Compatibility](#15-cross-platform-compatibility)
-16. [USB & Hardware Devices](#16-usb--hardware-devices)
-17. [Penetration Testing Readiness](#17-penetration-testing-readiness)
-18. [Container Source Verification & Supply Chain Security](#18-container-source-verification--supply-chain-security)
-19. [LLM-Assisted Stack Design Workflow](#19-llm-assisted-stack-design-workflow)
-20. [Checklist for New Services](#20-checklist-for-new-services)
+15. [Cross-platform compatibility](#15-cross-platform-compatibility)
+16. [USB and hardware devices](#16-usb-and-hardware-devices)
+17. [Penetration testing readiness](#17-penetration-testing-readiness)
+18. [Container source verification and supply chain security](#18-container-source-verification-and-supply-chain-security)
+19. [LLM-assisted stack design workflow](#19-llm-assisted-stack-design-workflow)
+20. [Checklist for new services](#20-checklist-for-new-services)
 21. [References](#21-references)
 
 ---
 
-## 1. Compose File Structure
+## 1. Compose file structure
 
 > **In a nutshell:** Put reusable config in extension fields (`x-`), define services, secrets, networks, and volumes in that order. Use YAML anchors to avoid repetition. Use profiles for optional services.
 
-### 1.1 File Organisation
+### 1.1 File organisation
 
 ```yaml
 # Extension fields (reusable blocks) — must start with x-
@@ -76,7 +76,7 @@ volumes:
     driver: local
 ```
 
-### 1.2 YAML Anchors & Extension Fields
+### 1.2 YAML anchors and extension fields
 
 Define shared config once, reference everywhere:
 
@@ -127,22 +127,23 @@ docker compose --profile debug up -d           # Starts app + debug tools
 
 Useful for: development tools, monitoring stacks, one-off maintenance containers, and services needed only in specific environments.
 
-### 1.4 Compose Version
+### 1.4 Compose version
 
 Docker Compose v2 (the Go-based `docker compose` plugin) does **not** require a `version:` key in the compose file. If present, it's ignored. The legacy `docker-compose` (Python, v1) is deprecated and should not be used.
 
 Verify your version:
+
 ```bash
 docker compose version    # Should show v2.x.x
 ```
 
 ---
 
-## 2. Image Management
+## 2. Image management
 
 > **In a nutshell:** Always pin images to exact version tags. Never use `:latest`. Verify tags actually exist on Docker Hub before committing — not all versions have matching tags.
 
-### 2.1 Image Pinning
+### 2.1 Image pinning
 
 | Tag Style | Example | Use When |
 |-----------|---------|----------|
@@ -151,36 +152,38 @@ docker compose version    # Should show v2.x.x
 | **Never** | `:latest` | Never in production — unpredictable, unauditable |
 
 > **Gotcha:** Not all images publish major-only tags. For example, `grafana/grafana:12`, `prom/prometheus:v3`, and `prom/node-exporter:v1` do **not** exist. Always verify with `docker pull <image>:<tag>` before committing.
-
+>
 > **Gotcha (tag mismatch):** A container's internal version may not match any Docker Hub tag.
 > For example, `eclipse-mosquitto:2` pulls an image that reports version `2.1.2` internally, but Docker Hub only publishes `eclipse-mosquitto:2.1.2-alpine` — there is no `eclipse-mosquitto:2.1.2` tag.
 > Always check the registry (Docker Hub tags page or `docker manifest inspect`) rather than trusting `docker inspect` labels or in-container version commands.
 
-### 2.2 Multi-Architecture Images
+### 2.2 Multi-architecture images
 
 Most official images publish multi-arch manifests (`linux/amd64`, `linux/arm64`, `linux/arm/v7`). Docker automatically pulls the correct architecture for your host.
 
 Verify an image supports your platform:
+
 ```bash
 docker manifest inspect <image>:<tag> | grep architecture
 ```
 
-### 2.3 Image Provenance
+### 2.3 Image provenance
 
 - Prefer official images from Docker Hub or verified publishers
 - For GitHub Container Registry images, verify the source repository
 - Consider enabling [Docker Content Trust](https://docs.docker.com/engine/security/trust/) for image signature verification:
+
   ```bash
   export DOCKER_CONTENT_TRUST=1
   ```
 
 ---
 
-## 3. Security Hardening
+## 3. Security hardening
 
 > **In a nutshell:** Drop all Linux capabilities, block privilege escalation, run as non-root, make the filesystem read-only, and use Docker secrets for passwords. If a service can't follow these rules, document why and what compensates.
 
-### 3.1 Mandatory Defaults
+### 3.1 Mandatory defaults
 
 Every service MUST have these unless a documented exception exists:
 
@@ -192,7 +195,7 @@ x-security: &default-security
     - ALL                        # CIS 5.3  — drop all Linux capabilities
 ```
 
-### 3.2 Capability Management
+### 3.2 Capability management
 
 After dropping all capabilities, add back **only** what the service requires:
 
@@ -207,7 +210,7 @@ After dropping all capabilities, add back **only** what the service requires:
 
 > **Gotcha (entrypoint chown):** Some images (e.g., Eclipse Mosquitto, MariaDB) run `chown` on data directories before dropping to a non-root user. They crash with `Operation not permitted` unless you add `SETGID`, `SETUID`, `CHOWN`, and `DAC_OVERRIDE`.
 
-### 3.3 Read-Only Root Filesystem
+### 3.3 Read-only root filesystem
 
 Where possible, make the container's root filesystem immutable:
 
@@ -222,7 +225,7 @@ services:
 
 This prevents an attacker from writing to the container filesystem. Use `tmpfs` mounts for directories that need to be writable.
 
-### 3.4 Run as Non-Root
+### 3.4 Run as non-root
 
 ```yaml
 services:
@@ -236,7 +239,7 @@ Or build images with a non-root `USER` directive.
 > Most official images (postgres, redis, nginx) do **not** support them.
 > Check the image documentation for the correct method — some use `user:` in compose, others handle ownership in their entrypoint.
 
-### 3.5 Docker Socket Safety
+### 3.5 Docker socket safety
 
 The Docker socket (`/var/run/docker.sock`) gives **full root-equivalent access** to the host. A compromised container with socket access can:
 
@@ -245,6 +248,7 @@ The Docker socket (`/var/run/docker.sock`) gives **full root-equivalent access**
 - Execute commands on the host as root
 
 Rules:
+
 - Mount with `:ro` where possible: `/var/run/docker.sock:/var/run/docker.sock:ro`
 - Both Watchtower and Portainer work with `:ro` mounts
 
@@ -254,9 +258,10 @@ Rules:
 
 - For real socket protection, use [Tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy) to expose only specific API endpoints (e.g., allow container listing but block container creation)
 
-### 3.6 Secrets Management
+### 3.6 Secrets management
 
 **Never** put passwords in:
+
 - Compose files (committed to git)
 - `.env` files (can leak, often committed accidentally)
 - Environment variables in the compose file (visible via `docker inspect`)
@@ -283,7 +288,7 @@ services:
 
 > **Gotcha:** File-based secrets require Compose v2. Legacy `docker-compose` (Python v1) requires Swarm mode for secrets.
 
-### 3.7 Network Segmentation
+### 3.7 Network segmentation
 
 See [Section 7: Networking](#7-networking) for isolating services by trust zone.
 
@@ -302,7 +307,7 @@ services:
 
 The default seccomp profile blocks ~44 dangerous syscalls. Only create custom profiles if you need to restrict further.
 
-### 3.9 Documenting Security Exceptions
+### 3.9 Documenting security exceptions
 
 When a service can't follow the defaults, document **why** and **what compensates**:
 
@@ -329,11 +334,11 @@ Common exceptions and their compensations:
 
 ---
 
-## 4. Storage & Volumes
+## 4. Storage and volumes
 
 > **In a nutshell:** Use bind mounts for config files you edit on the host. Use named volumes or bind mounts under `${DATA_DIR}` for persistent data. Mount config as `:ro`. Never store important data in the container filesystem — it's gone when the container is removed.
 
-### 4.1 Bind Mounts vs Named Volumes
+### 4.1 Bind mounts vs named volumes
 
 | Type | Syntax | Use When |
 |------|--------|----------|
@@ -342,7 +347,7 @@ Common exceptions and their compensations:
 | Named volume | `db-data:/var/lib/postgresql/data` | Docker-managed, better performance on macOS/Windows |
 | tmpfs | `tmpfs: [/tmp]` | Ephemeral data that should never hit disk |
 
-### 4.2 Volume Mount Patterns
+### 4.2 Volume mount patterns
 
 Separate your mounts by purpose and permission:
 
@@ -365,7 +370,7 @@ services:
       - /app/cache
 ```
 
-### 4.3 Mount Permissions and Flags
+### 4.3 Mount permissions and flags
 
 | Flag | Meaning | When to Use |
 |------|---------|-------------|
@@ -379,9 +384,9 @@ services:
 
 > **Gotcha (SELinux):** On Fedora, RHEL, and CentOS, bind mounts may fail with permission denied unless you add `:z` or `:Z`. Docker relabels the host directory — `:Z` is safer (private to one container) but prevents sharing.
 
-### 4.4 Recommended Directory Layout
+### 4.4 Recommended directory layout
 
-```
+```text
 ${DATA_DIR}/
 ├── app/
 │   ├── config/          # Application configuration (backed up)
@@ -395,7 +400,7 @@ ${DATA_DIR}/
 └── cache/               # Ephemeral cache (no backup needed)
 ```
 
-### 4.5 File Ownership
+### 4.5 File ownership
 
 Most containers run as a specific UID/GID. Ensure your host directories match:
 
@@ -412,7 +417,7 @@ sudo chown 1000:1000 /mnt/data/app/data
 
 ---
 
-## 5. Host Filesystem Setup
+## 5. Host filesystem setup
 
 > **In a nutshell:** Use a dedicated data drive (ext4 or XFS) mounted with `noatime,nofail`. On macOS, prefer named volumes for heavy I/O. On Windows, always store data on the WSL2 filesystem — never on NTFS mounts.
 
@@ -438,17 +443,20 @@ echo "UUID=$UUID /mnt/data ext4 defaults,noatime,nofail 0 2" | sudo tee -a /etc/
 ```
 
 **Recommended mount options:**
+
 - `noatime` — don't update access times (reduces disk writes, improves SSD lifespan)
 - `nofail` — don't block boot if the drive is missing (critical for external/USB drives)
 - `discard` — enable TRIM for SSDs (or use `fstrim.timer` systemd service)
 
 **Permissions:**
+
 ```bash
 sudo chown 1000:1000 /mnt/data    # Match your PUID/PGID
 sudo chmod 750 /mnt/data           # Owner: rwx, group: rx, other: none
 ```
 
 **Raspberry Pi / SBCs:**
+
 - NVMe SSD via PCIe or USB3 adapter is strongly recommended over SD card for data
 - Add `cgroup_enable=memory` to `/boot/firmware/cmdline.txt` for Docker memory limits
 - For NVMe booting: configure `BOOT_ORDER` in EEPROM with `rpi-eeprom-config`
@@ -460,16 +468,19 @@ Docker Desktop for Mac runs containers in a lightweight Linux VM. Volumes are sh
 **Filesystem:** APFS (default macOS filesystem) — no special setup needed.
 
 **Performance:**
+
 - Bind mounts are slower than native Linux due to the VM layer
 - For large data volumes (databases), prefer named volumes over bind mounts
 - In development, use `:cached` flag for source code mounts
 
 **Data location:**
+
 - Docker VM disk image: `~/Library/Containers/com.docker.docker/Data/vms/0/data/`
 - Default bind mount root: your macOS home directory
 - Recommended data directory: `~/docker-data/` or `/opt/docker-data/`
 
 **Permissions:**
+
 ```bash
 mkdir -p ~/docker-data
 # macOS doesn't use UID/GID the same way — Docker Desktop maps your macOS
@@ -490,6 +501,7 @@ Docker Desktop for Windows uses WSL2 as the backend.
 | Named volumes | ext4 in Docker VM | Fast | Good alternative |
 
 **Setup:**
+
 ```powershell
 # In WSL2 (Ubuntu/Debian):
 sudo mkdir -p /mnt/data
@@ -497,6 +509,7 @@ sudo chown 1000:1000 /mnt/data
 ```
 
 **Line endings:** Ensure all config files use LF, not CRLF:
+
 ```bash
 git config --global core.autocrlf input
 ```
@@ -506,25 +519,27 @@ git config --global core.autocrlf input
 ### 5.4 FreeBSD / Unix
 
 Docker is not officially supported on FreeBSD. Alternatives:
+
 - **Podman** — compatible with Docker Compose files, runs natively on FreeBSD
 - **Jails + Bastille** — FreeBSD-native containerisation
 - **bhyve VM** — run Docker inside a Linux VM on FreeBSD
 
 If using a Linux VM on FreeBSD:
+
 - Use ZFS for the VM disk image (native to FreeBSD, excellent snapshotting for backups)
 - Format the VM's data volume as ext4 or XFS (same as Linux section above)
 
 ---
 
-## 6. Environment & Configuration
+## 6. Environment and configuration
 
 > **In a nutshell:** Put non-sensitive shared config (timezone, paths, UIDs) in `.env`. Put passwords and tokens in Docker secrets. Never commit `.env` or secrets to git.
 
-### 6.1 The `.env` File
+### 6.1 The `.env` file
 
 Docker Compose automatically loads `.env` from the compose file's directory. Use it for **non-sensitive**, shared configuration:
 
-```
+```ini
 TZ=UTC
 PUID=1000
 PGID=1000
@@ -536,16 +551,17 @@ Provide `.env.example` in your repo as a template. Add `.env` to `.gitignore`.
 
 > **Gotcha:** `.env` is loaded relative to the **compose file's directory**, not your working directory. Running `docker compose -f /path/to/docker-compose.yml up` loads `/path/to/.env`.
 
-### 6.2 Environment Variable Precedence
+### 6.2 Environment variable precedence
 
 From highest to lowest priority:
+
 1. `docker compose run -e VAR=value` (CLI override)
 2. `environment:` block in the compose file
 3. `--env-file` flag
 4. `.env` file
 5. Host environment variables
 
-### 6.3 Sensitive vs Non-Sensitive Config
+### 6.3 Sensitive vs non-sensitive config
 
 | Type | Storage Method | Example |
 |------|---------------|---------|
@@ -553,7 +569,7 @@ From highest to lowest priority:
 | API endpoints, feature flags | `environment:` in compose | `API_URL=http://backend:3000` |
 | Timezone, UID, paths | `.env` file | `TZ=UTC`, `DATA_DIR=/mnt/data` |
 
-### 6.4 Docker Configs (Read-Only Files)
+### 6.4 Docker configs (read-only files)
 
 For non-sensitive config files that need to be injected:
 
@@ -578,7 +594,7 @@ This is an alternative to bind-mounting config files. Useful in Swarm deployment
 
 > **Troubleshooting:** If containers can't reach each other, see [Troubleshooting — Service connectivity](TROUBLESHOOTING.md#17-service-cant-connect-to-another-service) and [Debugging — Check networking](TROUBLESHOOTING.md#step-7-check-networking).
 
-### 7.1 Network Types
+### 7.1 Network types
 
 | Type | Use When | Command |
 |------|----------|---------|
@@ -587,7 +603,7 @@ This is an alternative to bind-mounting config files. Useful in Swarm deployment
 | `none` | Container should have no network access | `network_mode: none` |
 | `macvlan` | Container needs its own IP on the LAN | `driver: macvlan` |
 
-### 7.2 Network Isolation by Trust Zone
+### 7.2 Network isolation by trust zone
 
 ```yaml
 networks:
@@ -603,7 +619,7 @@ networks:
 
 Place each service on only the networks it needs. A web app might join `frontend` and `backend`, while the database only joins `backend`.
 
-### 7.3 Internal Networks
+### 7.3 Internal networks
 
 For networks that should never be externally accessible:
 
@@ -614,7 +630,7 @@ networks:
     internal: true       # No external/internet access
 ```
 
-### 7.4 Host Network Mode
+### 7.4 Host network mode
 
 ```yaml
 services:
@@ -626,7 +642,7 @@ services:
 >
 > **Gotcha (macOS/Windows):** `network_mode: host` connects to the Docker VM's network, not your physical LAN. Device discovery (mDNS, SSDP) will not work.
 
-### 7.5 Port Publishing
+### 7.5 Port publishing
 
 ```yaml
 services:
@@ -640,11 +656,11 @@ services:
 
 ---
 
-## 8. Resource Limits
+## 8. Resource limits
 
 > **In a nutshell:** Every container must have `mem_limit`, `cpus`, and `pids_limit` set. Without them, a single runaway container can starve or crash the entire host. Start with the sizing guidelines and tune from `docker stats`.
 
-### 8.1 Mandatory Limits
+### 8.1 Mandatory limits
 
 Every container MUST have these set:
 
@@ -656,7 +672,7 @@ services:
     pids_limit: 200        # CIS 5.28 — prevent fork bombs
 ```
 
-### 8.2 Sizing Guidelines
+### 8.2 Sizing guidelines
 
 | Service Type | Memory | CPUs | PIDs |
 |-------------|--------|------|------|
@@ -670,7 +686,7 @@ services:
 
 Tune based on actual usage: `docker stats --no-stream`
 
-### 8.3 Memory Reservation vs Limit
+### 8.3 Memory reservation vs limit
 
 ```yaml
 services:
@@ -679,7 +695,7 @@ services:
     mem_reservation: 512m  # Soft limit — Docker tries to maintain this
 ```
 
-### 8.4 Verifying Limits Are Enforced
+### 8.4 Verifying limits are enforced
 
 ```bash
 # Check for Docker warnings about missing cgroup support
@@ -720,11 +736,11 @@ services:
 
 ---
 
-## 9. Healthchecks & Dependencies
+## 9. Healthchecks and dependencies
 
 > **Troubleshooting:** For common healthcheck failures, see [Troubleshooting — Check healthchecks](TROUBLESHOOTING.md#step-6-check-healthchecks).
 
-### 9.1 Healthcheck Configuration
+### 9.1 Healthcheck configuration
 
 ```yaml
 services:
@@ -737,7 +753,7 @@ services:
       start_period: 30s    # Grace period for slow-starting services
 ```
 
-### 9.2 Healthcheck Patterns by Service Type
+### 9.2 Healthcheck patterns by service type
 
 | Service Type | Healthcheck | Notes |
 |-------------|-------------|-------|
@@ -759,7 +775,7 @@ services:
 
 > **Gotcha:** Some minimal images (distroless, Portainer, scratch-based) have no shell — `CMD-SHELL` will fail. Use `CMD` with a binary that exists in the image.
 
-### 9.4 Dependency Ordering
+### 9.4 Dependency ordering
 
 ```yaml
 services:
@@ -779,7 +795,7 @@ services:
 
 > **In a nutshell:** Always configure log rotation (`max-size: "10m"`, `max-file: "3"`) — without it, logs grow until your disk is full. Use a shared YAML anchor so every service gets the same config.
 
-### 10.1 Log Rotation
+### 10.1 Log rotation
 
 Every service MUST have log rotation configured to prevent disk exhaustion:
 
@@ -791,9 +807,10 @@ x-logging: &default-logging
     max-file: "3"          # Keep 3 rotated files (30MB max per container)
 ```
 
-### 10.2 Alternative: Daemon-Level Default
+### 10.2 Alternative: daemon-level default
 
 Set globally in `/etc/docker/daemon.json`:
+
 ```json
 {
   "log-driver": "json-file",
@@ -806,7 +823,7 @@ Set globally in `/etc/docker/daemon.json`:
 
 Per-service logging in compose overrides the daemon default. The anchor approach is preferred because it's visible and travels with the repo.
 
-### 10.3 Log Drivers
+### 10.3 Log drivers
 
 | Driver | Use When |
 |--------|----------|
@@ -818,11 +835,11 @@ Per-service logging in compose overrides the daemon default. The anchor approach
 
 ---
 
-## 11. Graceful Shutdown
+## 11. Graceful shutdown
 
 > **In a nutshell:** Set `stop_grace_period` on stateful services so they have time to flush data before Docker kills them. Use `init: true` if your container ignores stop signals. Databases need 30s; most services are fine with the 10s default.
 
-### 11.1 Stop Grace Period
+### 11.1 Stop grace period
 
 Set `stop_grace_period` on stateful services that need time to flush data:
 
@@ -842,7 +859,7 @@ services:
 
 Docker sends SIGTERM first. If the container doesn't stop within the grace period, Docker sends SIGKILL — which can **corrupt databases**.
 
-### 11.2 Stop Signal
+### 11.2 Stop signal
 
 Docker sends SIGTERM by default. Some services expect a different signal for graceful shutdown:
 
@@ -859,7 +876,7 @@ services:
 | PostgreSQL | SIGTERM or SIGINT | SIGTERM = smart shutdown (wait for clients) |
 | HAProxy | SIGUSR1 | Graceful stop in some configurations |
 
-### 11.3 Init Process (`init: true`)
+### 11.3 Init process (`init: true`)
 
 ```yaml
 services:
@@ -868,13 +885,14 @@ services:
 ```
 
 `init: true` adds a lightweight init process ([tini](https://github.com/krallin/tini)) as PID 1 in the container. This:
+
 - **Forwards signals** properly to child processes (fixes containers that ignore SIGTERM)
 - **Reaps zombie processes** that would otherwise accumulate
 - Is especially useful for shell-based entrypoints, multi-process containers, and services that don't handle PID 1 responsibilities
 
 > **When to use:** If your container runs a shell script entrypoint, spawns background processes, or doesn't respond to `docker stop` within a few seconds, add `init: true`.
 
-### 11.4 Signal Handling in Dockerfiles
+### 11.4 Signal handling in Dockerfiles
 
 Ensure your application handles SIGTERM gracefully. In shell-based entrypoints, use `exec` to replace the shell process so SIGTERM reaches the application:
 
@@ -890,11 +908,11 @@ CMD exec node server.js
 
 ---
 
-## 12. Update Management
+## 12. Update management
 
 > **In a nutshell:** Use Watchtower for automatic updates on non-critical services. Exclude databases and critical services with labels so you can review changelogs before updating them manually.
 
-### 12.1 Automatic Updates with Watchtower
+### 12.1 Automatic updates with Watchtower
 
 ```yaml
 services:
@@ -908,7 +926,7 @@ services:
       - WATCHTOWER_LABEL_ENABLE=false        # Update all except opted-out
 ```
 
-### 12.2 Selective Updates
+### 12.2 Selective updates
 
 Exclude critical services that need manual review:
 
@@ -921,7 +939,7 @@ services:
 
 > **Note:** `WATCHTOWER_LABEL_ENABLE=false` means update **all** unless opted out. Set to `true` to only update containers explicitly opted in.
 
-### 12.3 Manual Update Procedure
+### 12.3 Manual update procedure
 
 ```bash
 # 1. Check current versions
@@ -953,11 +971,11 @@ docker compose up -d <service>
 
 ---
 
-## 13. Backup & Disaster Recovery
+## 13. Backup and disaster recovery
 
 > **In a nutshell:** Keep compose files and config in git (Tier 1). Back up data volumes daily with tar or rsync (Tier 2). Use native database dump tools for databases (Tier 3). Test your restores quarterly — an untested backup is not a backup.
 
-### 13.1 What to Protect
+### 13.1 What to protect
 
 | Data Type | Priority | RPO | Backup Method |
 |-----------|----------|-----|---------------|
@@ -971,14 +989,16 @@ docker compose up -d <service>
 
 **RPO** = Recovery Point Objective — the maximum acceptable data loss in time.
 
-### 13.2 Backup Tiers
+### 13.2 Backup tiers
 
-**Tier 1 — Git (config-as-code)**
+#### Tier 1 — Git (config-as-code)
+
 - All compose files, Prometheus config, provisioning scripts in git
 - Push after every change
 - Recovery: `git clone` on a fresh machine
 
-**Tier 2 — Daily data volume backup**
+#### Tier 2 — Daily data volume backup
+
 - Schedule: daily (e.g. 2am, before any auto-updater runs)
 - Tools:
   - [`offen/docker-volume-backup`](https://github.com/offen/docker-volume-backup) — Docker-native, handles stop/start
@@ -1010,7 +1030,7 @@ docker compose -f "$COMPOSE_FILE" start database
 find "$BACKUP_DIR" -name "stack-*.tar.gz" -mtime +7 -delete
 ```
 
-**Tier 3 — Database-specific dumps**
+#### Tier 3 — Database-specific dumps
 
 For databases, a filesystem backup of a running database can produce a corrupt snapshot. Use native dump tools:
 
@@ -1029,14 +1049,16 @@ docker exec cache redis-cli BGSAVE
 # Then copy the dump.rdb file
 ```
 
-**Tier 4 — Full disk image (OS + everything)**
+#### Tier 4 — Full disk image (OS + everything)
+
 - Quarterly or before major changes
 - Tools: `dd`, Clonezilla, Raspberry Pi Imager (for Pi)
 - Store off-site (different physical location)
 
-### 13.3 Recovery Procedures
+### 13.3 Recovery procedures
 
 #### Single container crash
+
 ```bash
 docker logs <container> --tail 50
 docker compose restart <service>
@@ -1045,6 +1067,7 @@ docker inspect <container> | grep -i oom          # Check OOM kills
 ```
 
 #### Bad update
+
 ```bash
 docker compose stop <service>
 docker images | grep <service>                    # Find previous version
@@ -1053,6 +1076,7 @@ docker compose up -d <service>
 ```
 
 #### Storage failure
+
 ```bash
 # 1. Replace/format drive, mount at your DATA_DIR
 # 2. Restore from Tier 2 backup: tar xzf /backup/stack-YYYYMMDD.tar.gz -C /
@@ -1063,6 +1087,7 @@ docker compose up -d <service>
 ```
 
 #### Full host failure
+
 ```bash
 # 1. Fresh OS install (or restore Tier 4 image)
 # 2. Install Docker: curl -fsSL https://get.docker.com | sh
@@ -1070,9 +1095,10 @@ docker compose up -d <service>
 # 4. Restore data and start stack (see storage failure above)
 ```
 
-### 13.4 Testing Backups
+### 13.4 Testing backups
 
 **Monthly:** Verify backups exist and aren't corrupt
+
 ```bash
 ls -lh /backup/stack-*.tar.gz
 tar tzf /backup/stack-LATEST.tar.gz | head -20
@@ -1086,7 +1112,7 @@ tar tzf /backup/stack-LATEST.tar.gz | head -20
 
 > **In a nutshell:** At minimum, use `docker stats` and `docker ps` to check health. For proper monitoring, run Prometheus + Grafana + Node Exporter + cAdvisor — there's a ready-made stack in the [monitoring/](../monitoring/) directory.
 
-### 14.1 Quick Health Commands
+### 14.1 Quick health commands
 
 ```bash
 # Container status
@@ -1102,7 +1128,7 @@ docker system df
 docker system prune -f
 ```
 
-### 14.2 Recommended Alert Thresholds
+### 14.2 Recommended alert thresholds
 
 | Alert | Threshold | Severity |
 |-------|-----------|----------|
@@ -1114,7 +1140,7 @@ docker system prune -f
 | CPU temperature | > 80°C | Warning |
 | Backup age | > 48 hours | Warning |
 
-### 14.3 Monitoring Stack
+### 14.3 Monitoring stack
 
 A complete monitoring stack typically includes:
 
@@ -1131,11 +1157,11 @@ See the [monitoring/](../monitoring/) directory for an example compose file.
 
 ---
 
-## 15. Cross-Platform Compatibility
+## 15. Cross-platform compatibility
 
 > **In a nutshell:** Security hardening, resource limits, healthchecks, and secrets work everywhere. Host networking, USB passthrough, and system-level monitoring (Node Exporter, cAdvisor) only work properly on native Linux.
 
-### 15.1 Feature Matrix
+### 15.1 Feature matrix
 
 | Feature | Linux | macOS (Docker Desktop) | Windows (Docker Desktop / WSL2) |
 |---------|-------|----------------------|-------------------------------|
@@ -1149,9 +1175,10 @@ See the [monitoring/](../monitoring/) directory for an example compose file.
 | Volume performance | Native | VirtioFS (slower) | ext4/WSL2 (fast), NTFS (slow) |
 | SELinux `:z`/`:Z` flags | Fedora/RHEL | N/A | N/A |
 
-### 15.2 What Works Everywhere
+### 15.2 What works everywhere
 
 These patterns work on all platforms without modification:
+
 - Security hardening (`no-new-privileges`, `cap_drop`, `read_only`)
 - Resource limits (`mem_limit`, `cpus`, `pids_limit`)
 - Healthchecks and `depends_on`
@@ -1159,9 +1186,10 @@ These patterns work on all platforms without modification:
 - Logging configuration
 - Bridge networks
 
-### 15.3 Linux-Only for Production
+### 15.3 Linux-only for production
 
 These require native Linux for meaningful results:
+
 - **Node Exporter** — reports VM metrics on macOS/Windows
 - **cAdvisor** — reports VM-level container metrics on non-Linux
 - **`network_mode: host`** — connects to VM, not your physical LAN
@@ -1169,11 +1197,11 @@ These require native Linux for meaningful results:
 
 ---
 
-## 16. USB & Hardware Devices
+## 16. USB and hardware devices
 
 > **In a nutshell:** Always use `/dev/serial/by-id/` paths for USB devices — they're stable across reboots and don't change when you plug in other devices. USB passthrough only works on native Linux.
 
-### 16.1 Persistent Device Paths
+### 16.1 Persistent device paths
 
 Always use `/dev/serial/by-id/` for USB devices:
 
@@ -1188,7 +1216,7 @@ devices:
 
 Find your devices: `ls -la /dev/serial/by-id/`
 
-### 16.2 Platform Limitations
+### 16.2 Platform limitations
 
 | Platform | USB Support |
 |----------|-------------|
@@ -1198,11 +1226,11 @@ Find your devices: `ls -la /dev/serial/by-id/`
 
 ---
 
-## 17. Penetration Testing Readiness
+## 17. Penetration testing readiness
 
 > **In a nutshell:** This section maps every security control in this guide to what a pen tester would flag if it's missing. If you follow sections 3, 7, and 8, you'll pass most container-focused pen test checks.
 
-### 17.1 Container Isolation (CIS Docker Benchmark)
+### 17.1 Container isolation (CIS Docker Benchmark)
 
 | Control | CIS Ref | Implementation | Pen Test Finding If Missing |
 |---------|---------|----------------|----------------------------|
@@ -1214,7 +1242,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Read-only filesystem | 5.12 | `read_only: true` + `tmpfs: [/tmp]` | Malware persistence, file drops |
 | Non-root user | 5.21 | `user: "1000:1000"` | Container breakout via root |
 
-### 17.2 Network Security
+### 17.2 Network security
 
 | Control | Implementation | Pen Test Finding If Missing |
 |---------|----------------|----------------------------|
@@ -1223,7 +1251,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Localhost binding | `127.0.0.1:8080:8080` for internal services | Unintended external exposure |
 | No inter-container trust | Each service has minimum network membership | Compromised container pivoting to others |
 
-### 17.3 Secrets & Credentials
+### 17.3 Secrets and credentials
 
 | Control | Implementation | Pen Test Finding If Missing |
 |---------|----------------|----------------------------|
@@ -1232,7 +1260,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Secrets not in git | `secrets/` in `.gitignore` | Credential exposure in version control |
 | Minimal env vars | Only non-sensitive config in environment | Information disclosure via `docker inspect` |
 
-### 17.4 Docker Socket Protection
+### 17.4 Docker socket protection
 
 | Control | Implementation | Pen Test Finding If Missing |
 |---------|----------------|----------------------------|
@@ -1240,7 +1268,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Minimal socket access | Only management tools get socket | Unnecessary attack surface |
 | Socket proxy | Tecnativa/docker-socket-proxy | API endpoint restriction |
 
-### 17.5 Image Security
+### 17.5 Image security
 
 | Control | Implementation | Pen Test Finding If Missing |
 |---------|----------------|----------------------------|
@@ -1249,7 +1277,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Signature verification | Cosign / digest pinning | Image tampering |
 | Regular updates | Watchtower or manual pull schedule | Known CVE in outdated images |
 
-### 17.6 Logging & Audit Trail
+### 17.6 Logging and audit trail
 
 | Control | Implementation | Pen Test Finding If Missing |
 |---------|----------------|----------------------------|
@@ -1257,7 +1285,7 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Docker daemon audit | `auditd` rules for Docker socket | Undetected Docker API abuse |
 | Resource monitoring | Prometheus + Grafana alerts | No detection of anomalous behaviour |
 
-### 17.7 Additional Hardening
+### 17.7 Additional hardening
 
 For production environments expecting regular pen tests:
 
@@ -1283,6 +1311,7 @@ services:
 ```
 
 **Daemon-level hardening** (`/etc/docker/daemon.json`):
+
 ```json
 {
   "icc": false,
@@ -1303,11 +1332,11 @@ services:
 
 ---
 
-## 18. Container Source Verification & Supply Chain Security
+## 18. Container source verification and supply chain security
 
 > **In a nutshell:** Before adding any image to your stack, check who maintains it, whether it has unpatched CVEs, and how it's signed. Use the trust framework (T1–T5) and pre-adoption checklist to make the decision systematic.
 
-### 18.1 Image Trust Framework
+### 18.1 Image trust framework
 
 Classify every image by trust level:
 
@@ -1319,7 +1348,7 @@ Classify every image by trust level:
 | T4 | **Experimental** | New/unproven, <1,000 stars, single maintainer | Weekly |
 | T5 | **Deprecated** | No longer maintained, no commits in 12+ months | **Do not use** |
 
-### 18.2 Pre-Adoption Checklist
+### 18.2 Pre-adoption checklist
 
 Before adding ANY new container image:
 
@@ -1334,7 +1363,7 @@ Before adding ANY new container image:
 - [ ] **Image size reasonable** — bloated images often include unnecessary attack surface
 - [ ] **Base image known** — check `FROM` in the Dockerfile (Alpine, Debian, distroless preferred)
 
-### 18.3 Security Scanning
+### 18.3 Security scanning
 
 | Scan Type | Frequency | Tool | Purpose |
 |-----------|-----------|------|---------|
@@ -1354,7 +1383,7 @@ docker scout cves postgres:16.6
 trivy image --format cyclonedx postgres:16.6 > sbom.json
 ```
 
-### 18.4 Version Pinning Policy
+### 18.4 Version pinning policy
 
 ```yaml
 # PRODUCTION — always pin to exact patch version
@@ -1367,7 +1396,7 @@ image: postgres:16
 image: postgres:latest
 ```
 
-### 18.5 Supply Chain Protection
+### 18.5 Supply chain protection
 
 **Risk:** An upstream image could be compromised (malicious layer injection, account takeover, typosquatting).
 
@@ -1393,21 +1422,26 @@ image: postgres:latest
    > **Note:** Docker Content Trust for Official Images is being retired. Docker recommends migrating to Sigstore-based verification. See [Docker's signing roadmap](https://docs.docker.com/engine/security/trust/) for current status.
 
 2. **Pin by digest** — the most tamper-proof method (immutable hash):
+
    ```yaml
    image: postgres@sha256:abc123...
    ```
+
    Find the digest: `docker inspect --format='{{index .RepoDigests 0}}' postgres:16.6`
 
 3. **Mirror critical images** — copy to a private registry you control:
+
    ```bash
    # Mirror to GitHub Container Registry
    docker pull postgres:16.6
    docker tag postgres:16.6 ghcr.io/your-org/mirror/postgres:16.6
    docker push ghcr.io/your-org/mirror/postgres:16.6
    ```
+
    Benefits: protection against upstream compromise, offline availability, full audit trail.
 
 4. **Automated update monitoring** — use Renovate or Dependabot to track new versions:
+
    ```json
    // renovate.json
    {
@@ -1416,7 +1450,7 @@ image: postgres:latest
    }
    ```
 
-### 18.6 Application Security Scorecard
+### 18.6 Application security scorecard
 
 Assess each service in your stack:
 
@@ -1429,6 +1463,7 @@ Assess each service in your stack:
 | Documentation | A–F | Security configuration guide, hardening docs |
 
 **Red flags that should block adoption:**
+
 - No authentication by default on a network-exposed service
 - Critical CVEs unpatched for >30 days
 - Single maintainer with no succession plan
@@ -1438,14 +1473,15 @@ Assess each service in your stack:
 
 ---
 
-## 19. LLM-Assisted Stack Design Workflow
+## 19. LLM-assisted stack design workflow
 
 > **In a nutshell:** Copy-paste these prompt templates into an LLM to get it to design, critique, deploy, test, and maintain your Docker Compose stack. Each phase has a specific prompt that feeds the right context to the LLM.
 
-### 19.1 Phase 1 — Requirements & Design
+### 19.1 Phase 1 — requirements and design
 
-**Prompt: Define stack requirements**
-```
+#### Prompt: Define stack requirements
+
+```text
 I need to design a Docker Compose stack for [describe your use case].
 
 Requirements:
@@ -1465,8 +1501,9 @@ Please design the stack architecture including:
 6. Dependency ordering (healthcheck-based startup)
 ```
 
-**Prompt: Evaluate image choices**
-```
+#### Prompt: Evaluate image choices
+
+```text
 For each Docker image in my stack, assess:
 1. Trust level (official/verified/community/experimental)
 2. CVE history and current vulnerability status
@@ -1481,10 +1518,11 @@ Images to assess:
 - [image:tag]
 ```
 
-### 19.2 Phase 2 — Compose File Critique
+### 19.2 Phase 2 — Compose file critique
 
-**Prompt: Security audit**
-```
+#### Prompt: Security audit
+
+```text
 Critique this Docker Compose file against CIS Docker Benchmark and OWASP
 Docker Security Cheat Sheet. For each service, check:
 
@@ -1505,8 +1543,9 @@ Provide the fix for each FAIL.
 [paste your docker-compose.yml]
 ```
 
-**Prompt: Architecture review**
-```
+#### Prompt: Architecture review
+
+```text
 Review this Docker Compose stack for production readiness:
 
 1. Are there any single points of failure?
@@ -1523,10 +1562,11 @@ Review this Docker Compose stack for production readiness:
 [paste your docker-compose.yml]
 ```
 
-### 19.3 Phase 3 — Deployment & Debugging
+### 19.3 Phase 3 — deployment and debugging
 
-**Prompt: Pre-deployment validation**
-```
+#### Prompt: Pre-deployment validation
+
+```text
 I'm about to deploy this Docker Compose stack. Generate a pre-deployment
 checklist and the exact commands to:
 
@@ -1544,8 +1584,9 @@ checklist and the exact commands to:
 Platform: [Linux/macOS/Windows]
 ```
 
-**Prompt: Debug a failing service**
-```
+#### Prompt: Debug a failing service
+
+```text
 My Docker container [name] is [describe the problem: crash looping /
 unhealthy / can't connect / permission denied / OOM killed].
 
@@ -1565,10 +1606,11 @@ Diagnose the issue and provide the fix. Consider:
 7. Image compatibility (does this version work on my architecture?)
 ```
 
-### 19.4 Phase 4 — Testing
+### 19.4 Phase 4 — testing
 
-**Prompt: Generate test plan**
-```
+#### Prompt: Generate test plan
+
+```text
 Generate a comprehensive test plan for this Docker Compose stack.
 For each service, provide the exact commands to verify:
 
@@ -1586,8 +1628,9 @@ For each service, provide the exact commands to verify:
 [paste your docker-compose.yml]
 ```
 
-**Prompt: Stress testing**
-```
+#### Prompt: Stress testing
+
+```text
 Generate commands to stress test this Docker Compose stack:
 
 1. Memory pressure: verify containers are killed at their mem_limit, not before
@@ -1603,10 +1646,11 @@ Service to stress: [name]
 Expected resource limits: [mem_limit, cpus, pids_limit]
 ```
 
-### 19.5 Phase 5 — Ongoing Maintenance
+### 19.5 Phase 5 — ongoing maintenance
 
-**Prompt: Update assessment**
-```
+#### Prompt: Update assessment
+
+```text
 I'm updating [service] from [old version] to [new version].
 
 Please:
@@ -1618,8 +1662,9 @@ Please:
 6. Note any changes to resource requirements
 ```
 
-**Prompt: Stack health review**
-```
+#### Prompt: Stack health review
+
+```text
 Review this `docker stats` output and `docker ps` output for issues:
 
 [paste docker stats --no-stream output]
@@ -1636,7 +1681,7 @@ Check for:
 
 ---
 
-## 20. Checklist for New Services
+## 20. Checklist for new services
 
 When adding any container to a compose stack:
 
@@ -1678,6 +1723,7 @@ When adding any container to a compose stack:
 - [Renovate — automated dependency updates](https://github.com/renovatebot/renovate)
 
 **Other guides in this repo:**
+
 - [Docker Basics](DOCKER-BASICS.md) — intro to Docker & Compose, installation, alternative runtimes
 - [Troubleshooting](TROUBLESHOOTING.md) — common gotchas, debugging playbook, cleanup and reset recipes
 
