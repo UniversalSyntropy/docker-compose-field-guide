@@ -1,0 +1,97 @@
+# =============================================================================
+# RECIPE: Pi-hole — Network-Wide DNS Ad Blocker
+# =============================================================================
+# A hardened Pi-hole deployment following Field Guide security defaults.
+#
+# Pi-hole needs a few security exceptions to function as a DNS server.
+# Each exception is documented inline with its compensating control.
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2
+#
+# Usage:
+#   mkdir -p secrets && echo -n "your-password" > secrets/pihole_password.txt
+#   docker compose -f recipes/pihole.yml config --quiet
+#   docker compose -f recipes/pihole.yml up -d
+#
+# Access:
+#   Admin UI:  http://<host-ip>/admin
+#   DNS:       <host-ip>:53 (point your router or clients here)
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-security: &default-security
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:2025.03.0
+    # --- Security ---
+    # Cannot use <<: *default-security because Pi-hole needs NET_BIND_SERVICE
+    # and NET_RAW. We spell out the full block instead (YAML anchors don't
+    # merge lists — see BEST-PRACTICES.md §1.2).
+    security_opt:
+      - no-new-privileges:true           # CIS 5.25 — still enforced
+    cap_drop:
+      - ALL                              # CIS 5.3  — drop everything first
+    cap_add:
+      # EXCEPTION: DNS server binds to port 53 (privileged port).
+      # Compensation: all other capabilities remain dropped.
+      - NET_BIND_SERVICE
+      # EXCEPTION: Pi-hole uses raw sockets for DHCP (optional) and
+      # network diagnostics. If you don't use Pi-hole as a DHCP server,
+      # you can remove this capability.
+      # Compensation: restricted to the dns network only.
+      - NET_RAW
+    # Pi-hole writes to /etc/pihole and /etc/dnsmasq.d at runtime,
+    # so read_only: true is not practical here without extensive tmpfs.
+    # Compensation: volumes are scoped, no-new-privileges is set.
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR:-/mnt/data}/pihole/etc-pihole:/etc/pihole
+      - ${DATA_DIR:-/mnt/data}/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8053:80/tcp"                    # Web UI on non-standard port
+    environment:
+      - TZ=${TZ:-UTC}
+      - WEBPASSWORD_FILE=/run/secrets/pihole_password
+      # Upstream DNS — change to your preference
+      - PIHOLE_DNS_=1.1.1.1;1.0.0.1
+    secrets:
+      - pihole_password
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 150
+    stop_grace_period: 10s
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "dig", "+short", "+time=2", "@127.0.0.1", "pi.hole"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - dns
+
+secrets:
+  pihole_password:
+    file: ../secrets/pihole_password.txt
+
+networks:
+  dns:
+    driver: bridge

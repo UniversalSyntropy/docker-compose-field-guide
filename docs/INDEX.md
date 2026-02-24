@@ -210,6 +210,30 @@ A topical index covering every concept across all documents in this repo. Use th
 - Practical setup plan (phased) — [AGENT-SETUP: 6](AGENT-SETUP.md#6-practical-setup-plan)
 - LLM prompt templates — [BP: 19](BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow)
 
+## Recipes (Hardened Application Templates)
+
+- Recipe overview — [recipes/README.md](../recipes/README.md)
+- Pi-hole (DNS ad blocker) — [recipes/pihole.yml](../recipes/pihole.yml)
+- Nextcloud (self-hosted cloud) — [recipes/nextcloud.yml](../recipes/nextcloud.yml)
+- Traefik (reverse proxy with HTTPS) — [recipes/traefik.yml](../recipes/traefik.yml)
+
+## Reverse Proxy & HTTPS
+
+- Architecture overview — [REVERSE-PROXY.md](REVERSE-PROXY.md)
+- Quick start with Traefik — [REVERSE-PROXY.md: Quick Start](REVERSE-PROXY.md#quick-start-with-traefik)
+- Certificate methods (HTTP, DNS, local CA) — [REVERSE-PROXY.md: Certificate Methods](REVERSE-PROXY.md#certificate-methods)
+- Multi-stack networking — [REVERSE-PROXY.md: Connecting Multi-Stack Services](REVERSE-PROXY.md#connecting-multi-stack-services)
+- Hardened Traefik recipe — [recipes/traefik.yml](../recipes/traefik.yml)
+
+## Advanced Secrets Management
+
+- Plain-text limitations — [SECRETS-MANAGEMENT.md](SECRETS-MANAGEMENT.md)
+- Mozilla SOPS + age — [SECRETS-MANAGEMENT.md: Option 1](SECRETS-MANAGEMENT.md#option-1-mozilla-sops)
+- Doppler (hosted secrets) — [SECRETS-MANAGEMENT.md: Option 2](SECRETS-MANAGEMENT.md#option-2-doppler)
+- git-crypt — [SECRETS-MANAGEMENT.md: Option 3](SECRETS-MANAGEMENT.md#option-3-git-crypt)
+- Comparison table — [SECRETS-MANAGEMENT.md: Comparison](SECRETS-MANAGEMENT.md#comparison)
+- Baseline secrets — [BP: 3.6](BEST-PRACTICES.md#36-secrets-management)
+
 ## Contributing and style
 
 - Voice and style guide — [STYLE.md](STYLE.md)

@@ -65,6 +65,32 @@ scrape_configs:
   #         instance: 'local'
 
   # ---------------------------------------------------------------------------
+  # PI-HOLE — DNS query metrics
+  # Requires: pihole-exporter (https://github.com/eko/pihole-exporter)
+  # running alongside Pi-hole. See recipes/pihole.yml for the base setup.
+  # ---------------------------------------------------------------------------
+  # - job_name: 'pihole'
+  #   static_configs:
+  #     - targets: ['pihole-exporter:9617']
+  #       labels:
+  #         instance: 'local'
+
+  # ---------------------------------------------------------------------------
+  # NEXTCLOUD — Application metrics
+  # Requires: the Nextcloud "serverinfo" app (enabled by default).
+  # Expose via a Prometheus-compatible exporter or scrape the JSON endpoint.
+  # See recipes/nextcloud.yml for the base setup.
+  # ---------------------------------------------------------------------------
+  # - job_name: 'nextcloud'
+  #   metrics_path: '/ocs/v2.php/apps/serverinfo/api/v1/info'
+  #   params:
+  #     format: ['json']
+  #   static_configs:
+  #     - targets: ['nextcloud:80']
+  #       labels:
+  #         instance: 'local'
+
+  # ---------------------------------------------------------------------------
   # AUTHENTICATED ENDPOINTS — Example with bearer token file
   # Useful for services like Home Assistant that require auth for metrics.
   # Use bearer_token_file (not bearer_token) to avoid embedding secrets in

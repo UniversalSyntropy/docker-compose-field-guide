@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Recipes:** Hardened compose templates for Pi-hole, Nextcloud (+MariaDB +Redis), and Traefik v3 reverse proxy with automatic HTTPS (`recipes/`)
+- **Reverse proxy guide:** Architecture overview, Traefik quick start, certificate methods (HTTP challenge, DNS challenge, local CA), multi-stack networking (`docs/REVERSE-PROXY.md`)
+- **Advanced secrets management guide:** SOPS + age, Doppler, git-crypt walkthrough with comparison table (`docs/SECRETS-MANAGEMENT.md`)
+- **Dependabot:** Weekly checks for Docker image and GitHub Actions updates (`.github/dependabot.yml`)
+- **Mermaid architecture diagram** in README showing User → Proxy → Networks → Containers → Volumes/Secrets flow
+- **Live stack test** CI job — starts the root compose stack, verifies containers are running, tears down
+- Recipe validation in CI and Makefile `compose-check`
+- Pi-hole and Nextcloud commented scrape targets in Prometheus config
+- `DOMAIN` and `ACME_EMAIL` variables in `.env.example` for Traefik recipe
+- CONTRIBUTING.md — contributor guide with local validation instructions
+- SECURITY.md — security policy for a documentation repository
+- CHANGELOG.md
+- Issue templates (bug report, feature request)
+- Pull request template
+
 ### Changed
 
 - Applied house style: sentence case headings across all 17 markdown files
@@ -27,11 +44,3 @@
 - Added value proposition hook to README
 - Updated Contributing section in README to reference CONTRIBUTING.md
 - Added `strong` to allowed HTML elements in markdownlint config
-
-### Added
-
-- CONTRIBUTING.md — contributor guide with local validation instructions
-- SECURITY.md — security policy for a documentation repository
-- CHANGELOG.md
-- Issue templates (bug report, feature request)
-- Pull request template

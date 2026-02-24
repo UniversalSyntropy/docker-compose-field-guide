@@ -1,0 +1,125 @@
+# =============================================================================
+# RECIPE: Traefik — Hardened Reverse Proxy with Automatic HTTPS
+# =============================================================================
+# A security-hardened Traefik v3 deployment with Let's Encrypt TLS.
+# Routes external traffic to your internal Docker services over HTTPS.
+#
+# How it works:
+#   1. Traefik watches the Docker socket for containers with routing labels.
+#   2. When a labelled container starts, Traefik creates a route and
+#      requests a TLS certificate from Let's Encrypt automatically.
+#   3. HTTP requests are redirected to HTTPS.
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2
+#   - A domain name pointing to your server (for Let's Encrypt)
+#   - Port 80 and 443 open on your firewall
+#
+# Usage:
+#   # 1. Edit environment variables below (domain, email)
+#   # 2. Create the acme storage file (Let's Encrypt needs it to exist)
+#   mkdir -p ${DATA_DIR:-/mnt/data}/traefik
+#   touch ${DATA_DIR:-/mnt/data}/traefik/acme.json
+#   chmod 600 ${DATA_DIR:-/mnt/data}/traefik/acme.json
+#   # 3. Deploy
+#   docker compose -f recipes/traefik.yml config --quiet
+#   docker compose -f recipes/traefik.yml up -d
+#
+# To route a service through Traefik, add labels to it:
+#   labels:
+#     - "traefik.enable=true"
+#     - "traefik.http.routers.myapp.rule=Host(`myapp.example.com`)"
+#     - "traefik.http.routers.myapp.entrypoints=websecure"
+#     - "traefik.http.routers.myapp.tls.certresolver=letsencrypt"
+#     - "traefik.http.services.myapp.loadbalancer.server.port=8080"
+#   networks:
+#     - proxy
+#
+# See docs/REVERSE-PROXY.md for the full walkthrough.
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+
+  traefik:
+    container_name: traefik
+    image: traefik:v3.3.5
+    # --- Security ---
+    # Traefik needs NET_BIND_SERVICE for ports 80/443 and Docker socket
+    # access for auto-discovery. Both are documented exceptions.
+    security_opt:
+      - no-new-privileges:true           # CIS 5.25
+    cap_drop:
+      - ALL                              # CIS 5.3
+    cap_add:
+      # EXCEPTION: Binds to ports 80 and 443 (privileged).
+      # Compensation: all other capabilities dropped.
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+    command:
+      # --- Entrypoints ---
+      - '--entrypoints.web.address=:80'
+      - '--entrypoints.websecure.address=:443'
+      # Redirect all HTTP to HTTPS
+      - '--entrypoints.web.http.redirections.entrypoint.to=websecure'
+      - '--entrypoints.web.http.redirections.entrypoint.scheme=https'
+      # --- Let's Encrypt ---
+      - '--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/acme/acme.json'
+      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
+      # --- Docker provider ---
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=proxy'
+      # --- API / Dashboard ---
+      - '--api.dashboard=true'
+      - '--api.insecure=false'           # Dashboard only via routed label
+      # --- Logging ---
+      - '--log.level=WARN'
+      - '--accesslog=true'
+      - '--accesslog.bufferingsize=100'
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # EXCEPTION: Docker socket gives root-equivalent host access.
+      # Compensation: mounted read-only, Traefik only reads container
+      # labels — it never creates or modifies containers.
+      # For stronger isolation, consider a Docker socket proxy
+      # (see BEST-PRACTICES.md §3.5).
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${DATA_DIR:-/mnt/data}/traefik/acme.json:/acme/acme.json
+    labels:
+      # Route the Traefik dashboard through itself
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 150
+    stop_grace_period: 10s
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    name: proxy                          # Fixed name so other stacks can join
+    driver: bridge

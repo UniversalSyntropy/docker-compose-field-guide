@@ -58,6 +58,11 @@ compose-check:
 	@docker compose config --quiet 2>/dev/null \
 		|| echo "SKIP: docker-compose.yml requires .env + secrets (see README Quick Start)"
 	@docker compose -f monitoring/docker-compose.yml config --quiet
+	@for f in recipes/*.yml; do \
+		echo "Validating $$f..."; \
+		docker compose -f "$$f" config --quiet 2>/dev/null \
+			|| echo "SKIP: $$f requires secrets (see recipe header)"; \
+	done
 
 # ── Link check (local — offline, internal links only) ─────────────────
 link-check:

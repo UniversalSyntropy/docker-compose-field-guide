@@ -284,7 +284,7 @@ services:
 - Add `secrets/` to `.gitignore`
 - Create secret files with: `echo -n "password" > secrets/db_password.txt`
 - Not all images support `_FILE` suffix — check the image documentation
-- Consider encrypting secrets at rest with `age`, `sops`, or `git-crypt`
+- Consider encrypting secrets at rest with `age`, `sops`, or `git-crypt` — see the [Advanced Secrets Management guide](SECRETS-MANAGEMENT.md) for a full walkthrough
 
 > **Gotcha:** File-based secrets require Compose v2. Legacy `docker-compose` (Python v1) requires Swarm mode for secrets.
 
@@ -1726,6 +1726,9 @@ When adding any container to a compose stack:
 
 - [Docker Basics](DOCKER-BASICS.md) — intro to Docker & Compose, installation, alternative runtimes
 - [Troubleshooting](TROUBLESHOOTING.md) — common gotchas, debugging playbook, cleanup and reset recipes
+- [Reverse Proxy & HTTPS](REVERSE-PROXY.md) — Traefik setup, certificate methods, multi-stack routing
+- [Advanced Secrets Management](SECRETS-MANAGEMENT.md) — SOPS, Doppler, git-crypt for encrypting secrets at rest
+- [Hardened Recipes](../recipes/) — ready-to-deploy templates for Pi-hole, Nextcloud, Traefik
 
 ---
 

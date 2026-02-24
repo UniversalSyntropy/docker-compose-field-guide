@@ -35,6 +35,9 @@ A reference for building Docker Compose stacks that are well-structured, securit
 - **[A troubleshooting guide](docs/TROUBLESHOOTING.md)** — step-by-step [debugging playbook](docs/TROUBLESHOOTING.md#2-debugging-playbook),
   [decision tree](docs/TROUBLESHOOTING.md#6-troubleshooting-decision-tree), and fixes for orphan containers, port conflicts, and data that "disappears" after a recreate.
 - **[A monitoring stack](monitoring/)** — Prometheus, Grafana, Node Exporter, and cAdvisor. A reference config you'll want to adapt to your setup (Node Exporter gives meaningful host metrics on Linux only).
+- **[Hardened recipes](recipes/)** — ready-to-deploy templates for [Pi-hole](recipes/pihole.yml), [Nextcloud](recipes/nextcloud.yml), and [Traefik](recipes/traefik.yml) with security exceptions documented inline.
+- **[Reverse proxy & HTTPS guide](docs/REVERSE-PROXY.md)** — how to put Traefik in front of your services with automatic Let's Encrypt certificates.
+- **[Advanced secrets management](docs/SECRETS-MANAGEMENT.md)** — graduating from plain-text secrets to SOPS, Doppler, or git-crypt.
 - **[Helper scripts](scripts/)** — safe resets, hard resets, disk reports, and pruning. So you don't have to remember the flags.
 - **[Glossary](docs/GLOSSARY.md) and [index](docs/INDEX.md)** — look up any term, or find where a topic is discussed across the docs.
 - **[AI agent instructions](docs/AGENT-SETUP.md)** — for Claude Code, Copilot, Codex, and Cursor, so your coding tools follow the same standards you do.
@@ -58,6 +61,9 @@ A reference for building Docker Compose stacks that are well-structured, securit
 |--------------------|---------|
 | Learn what Docker & Compose are | [DOCKER-BASICS.md](docs/DOCKER-BASICS.md) |
 | Set up a new stack properly | [Best Practices](docs/BEST-PRACTICES.md) |
+| Deploy a real app (Pi-hole, Nextcloud) | [Recipes](recipes/) |
+| Add a reverse proxy with HTTPS | [Reverse Proxy Guide](docs/REVERSE-PROXY.md) |
+| Encrypt secrets at rest | [Secrets Management](docs/SECRETS-MANAGEMENT.md) |
 | Fix something that's broken | [Troubleshooting](docs/TROUBLESHOOTING.md) |
 | Look up a term | [Glossary](docs/GLOSSARY.md) |
 | Find where a topic is discussed | [Index](docs/INDEX.md) |
@@ -97,6 +103,61 @@ docker compose ps
 All containers should show status "Up" or "healthy".
 
 > The template is a **starting point**, not a drop-in solution. You'll need to swap in your own images, volumes, and secrets. The annotations explain what each block does and why.
+
+---
+
+## Architecture
+
+How a hardened homelab stack fits together — from the user's browser down
+to isolated containers and read-only volumes:
+
+```mermaid
+flowchart TD
+    User([User / Browser])
+    User -->|HTTPS 443| Proxy
+
+    subgraph docker [Docker Host]
+        Proxy[Reverse Proxy<br/>Traefik / Caddy]
+
+        subgraph frontend [Frontend Network]
+            App1[App Container<br/>e.g. Nextcloud]
+            App2[App Container<br/>e.g. Grafana]
+        end
+
+        subgraph backend [Backend Network — no external access]
+            DB[(Database<br/>Postgres / MariaDB)]
+            Cache[(Cache<br/>Redis)]
+        end
+
+        subgraph storage [Volumes & Secrets]
+            Vols[Bind Mounts<br/>read-only where possible]
+            Secrets[/run/secrets/*<br/>file-based, never in .env]
+        end
+
+        Proxy -->|HTTP internal| App1
+        Proxy -->|HTTP internal| App2
+        App1 --> DB
+        App1 --> Cache
+        App2 --> DB
+        DB --- Vols
+        DB --- Secrets
+        App1 --- Vols
+    end
+
+    style Proxy fill:#4a9eff,color:#fff
+    style DB fill:#e67e22,color:#fff
+    style Cache fill:#e67e22,color:#fff
+    style App1 fill:#2ecc71,color:#fff
+    style App2 fill:#2ecc71,color:#fff
+    style Secrets fill:#e74c3c,color:#fff
+    style backend fill:#fff3e0,stroke:#e67e22
+    style frontend fill:#e8f5e9,stroke:#2ecc71
+```
+
+Each container runs with `cap_drop: ALL`, `no-new-privileges`, resource
+limits, and log rotation. Networks isolate trust zones — the database is
+never reachable from the internet, and secrets are mounted as files, not
+passed as environment variables.
 
 ---
 
@@ -214,19 +275,27 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 ├── docker-compose.yml                     ← Annotated template (copy into your project)
 ├── .env.example                           ← Environment variable template
 ├── Makefile                               ← Local linting (make lint)
+├── recipes/
+│   ├── README.md                          ← Recipe overview and usage
+│   ├── pihole.yml                         ← Pi-hole DNS ad blocker (hardened)
+│   ├── nextcloud.yml                      ← Nextcloud + MariaDB + Redis (hardened)
+│   └── traefik.yml                        ← Traefik v3 reverse proxy with HTTPS
 ├── docs/
 │   ├── BEST-PRACTICES.md                  ← Best practices (21 sections)
 │   ├── DOCKER-BASICS.md                   ← New to Docker? Start here
 │   ├── TROUBLESHOOTING.md                 ← Gotchas, debugging, cleanup, reset recipes
+│   ├── REVERSE-PROXY.md                   ← Reverse proxy & HTTPS with Traefik
+│   ├── SECRETS-MANAGEMENT.md              ← Advanced secrets: SOPS, Doppler, git-crypt
 │   ├── GLOSSARY.md                        ← Definitions for every Docker/Compose term
 │   ├── INDEX.md                           ← Find any topic across all files
 │   ├── STYLE.md                           ← Voice and style guide for contributors
 │   └── AGENT-SETUP.md                     ← Multi-agent skill pack setup guide
 ├── .github/
 │   ├── copilot-instructions.md            ← GitHub Copilot repo instructions
+│   ├── dependabot.yml                     ← Automated Docker + Actions updates
 │   ├── ISSUE_TEMPLATE/                    ← Bug report and feature request templates
 │   ├── PULL_REQUEST_TEMPLATE.md           ← PR checklist
-│   └── workflows/validate.yml             ← CI: YAML, Markdown, ShellCheck, line length
+│   └── workflows/validate.yml             ← CI: lint, validate, live stack test
 ├── monitoring/
 │   ├── docker-compose.yml                 ← Prometheus + Grafana + exporters stack
 │   └── prometheus/prometheus.yml          ← Prometheus scrape config template

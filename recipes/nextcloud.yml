@@ -1,0 +1,182 @@
+# =============================================================================
+# RECIPE: Nextcloud — Self-Hosted Cloud Storage
+# =============================================================================
+# A hardened Nextcloud deployment with MariaDB and Redis, following Field
+# Guide security defaults.
+#
+# Nextcloud's PHP runtime and installer need a writable filesystem in several
+# paths. Each exception is documented inline.
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2
+#
+# Usage:
+#   mkdir -p secrets
+#   echo -n "db-root-pass"    > secrets/nextcloud_db_root_password.txt
+#   echo -n "db-pass"         > secrets/nextcloud_db_password.txt
+#   echo -n "admin-pass"      > secrets/nextcloud_admin_password.txt
+#   docker compose -f recipes/nextcloud.yml config --quiet
+#   docker compose -f recipes/nextcloud.yml up -d
+#
+# Access:
+#   Web UI: http://<host-ip>:8080
+#   First login: admin / (password from secrets file)
+# =============================================================================
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-security: &default-security
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Nextcloud — PHP application server
+  # ---------------------------------------------------------------------------
+  nextcloud:
+    container_name: nextcloud
+    image: nextcloud:30.0.6-apache
+    # --- Security ---
+    # Cannot use <<: *default-security because Apache binds to port 80.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      # EXCEPTION: Apache binds to port 80 inside the container.
+      # Compensation: all other capabilities remain dropped, port is
+      # remapped to 8080 on the host.
+      - NET_BIND_SERVICE
+    # EXCEPTION: Nextcloud writes to /var/www/html (app code, config,
+    # custom apps). read_only: true breaks the installer and updater.
+    # Compensation: data is on a dedicated volume, no-new-privileges set.
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR:-/mnt/data}/nextcloud/html:/var/www/html
+      - ${DATA_DIR:-/mnt/data}/nextcloud/data:/var/www/html/data
+    ports:
+      - "8080:80"
+    environment:
+      - TZ=${TZ:-UTC}
+      - MYSQL_HOST=nextcloud-db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD_FILE=/run/secrets/nextcloud_db_password
+      - NEXTCLOUD_ADMIN_USER=admin
+      - NEXTCLOUD_ADMIN_PASSWORD_FILE=/run/secrets/nextcloud_admin_password
+      - REDIS_HOST=nextcloud-cache
+      # Trusted domains — add your hostname or IP
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost
+    secrets:
+      - nextcloud_db_password
+      - nextcloud_admin_password
+    mem_limit: 512m
+    cpus: 2.0
+    pids_limit: 300
+    stop_grace_period: 15s
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/status.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s                  # Nextcloud is slow to start
+    depends_on:
+      nextcloud-db:
+        condition: service_healthy
+      nextcloud-cache:
+        condition: service_healthy
+    networks:
+      - nextcloud-frontend
+      - nextcloud-backend
+
+  # ---------------------------------------------------------------------------
+  # MariaDB — Database backend
+  # ---------------------------------------------------------------------------
+  nextcloud-db:
+    container_name: nextcloud-db
+    image: mariadb:11.7.2
+    <<: *default-security
+    # EXCEPTION: MariaDB needs SYS_NICE for thread priority management.
+    # Without it, the container logs warnings on every startup.
+    # Compensation: all other capabilities dropped, backend-only network.
+    cap_add:
+      - SYS_NICE
+    command:
+      - '--transaction-isolation=READ-COMMITTED'
+      - '--binlog-format=ROW'
+      - '--innodb-file-per-table=1'
+      - '--skip-innodb-read-only-compressed'
+    volumes:
+      - ${DATA_DIR:-/mnt/data}/nextcloud/db:/var/lib/mysql
+    secrets:
+      - nextcloud_db_root_password
+      - nextcloud_db_password
+    environment:
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/nextcloud_db_root_password
+      - MARIADB_DATABASE=nextcloud
+      - MARIADB_USER=nextcloud
+      - MARIADB_PASSWORD_FILE=/run/secrets/nextcloud_db_password
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 200
+    stop_grace_period: 30s               # Database needs time to flush
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - nextcloud-backend
+
+  # ---------------------------------------------------------------------------
+  # Redis — Session and file-locking cache
+  # ---------------------------------------------------------------------------
+  nextcloud-cache:
+    container_name: nextcloud-cache
+    image: redis:7.4.2
+    <<: *default-security
+    read_only: true
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR:-/mnt/data}/nextcloud/redis:/data
+    mem_limit: 128m
+    cpus: 0.5
+    pids_limit: 100
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - nextcloud-backend
+
+secrets:
+  nextcloud_db_root_password:
+    file: ../secrets/nextcloud_db_root_password.txt
+  nextcloud_db_password:
+    file: ../secrets/nextcloud_db_password.txt
+  nextcloud_admin_password:
+    file: ../secrets/nextcloud_admin_password.txt
+
+networks:
+  nextcloud-frontend:
+    driver: bridge                       # Web UI access
+  nextcloud-backend:
+    driver: bridge                       # DB + cache (no external access)

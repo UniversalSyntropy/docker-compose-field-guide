@@ -1,0 +1,59 @@
+# =============================================================================
+# DEPENDABOT — Automated Dependency Updates
+# =============================================================================
+# Checks for updates to Docker images and GitHub Actions on a weekly schedule.
+# Dependabot opens PRs automatically — review and merge at your pace.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot
+# =============================================================================
+
+version: 2
+updates:
+
+  # Docker images in the root compose file
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "docker"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Docker images in the monitoring stack
+  - package-ecosystem: "docker-compose"
+    directory: "/monitoring"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "docker"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Docker images in recipes
+  - package-ecosystem: "docker-compose"
+    directory: "/recipes"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "docker"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # GitHub Actions versions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "ci"

@@ -71,8 +71,11 @@ See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for the full debugging playboo
 | Best practices (21 sections) | [Best practices](docs/BEST-PRACTICES.md) |
 | Troubleshooting & debugging | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
 | Docker basics & installation | [DOCKER-BASICS.md](docs/DOCKER-BASICS.md) |
+| Reverse proxy & HTTPS | [REVERSE-PROXY.md](docs/REVERSE-PROXY.md) |
+| Advanced secrets management | [SECRETS-MANAGEMENT.md](docs/SECRETS-MANAGEMENT.md) |
 | Term definitions | [GLOSSARY.md](docs/GLOSSARY.md) |
 | Topic finder | [INDEX.md](docs/INDEX.md) |
 | Annotated template | [docker-compose.yml](docker-compose.yml) |
+| Hardened recipes | [recipes/](recipes/) |
 | Monitoring stack | [monitoring/](monitoring/) |
 | Helper scripts | [scripts/](scripts/) |

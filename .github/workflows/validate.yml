@@ -44,6 +44,10 @@ jobs:
           mkdir -p secrets
           echo -n "placeholder" > secrets/db_password.txt
           echo -n "placeholder" > secrets/grafana_admin_password.txt
+          echo -n "placeholder" > secrets/pihole_password.txt
+          echo -n "placeholder" > secrets/nextcloud_db_root_password.txt
+          echo -n "placeholder" > secrets/nextcloud_db_password.txt
+          echo -n "placeholder" > secrets/nextcloud_admin_password.txt
           cp .env.example .env
 
       - name: Validate main compose file
@@ -51,6 +55,13 @@ jobs:
 
       - name: Validate monitoring compose file
         run: docker compose -f monitoring/docker-compose.yml config --quiet
+
+      - name: Validate recipe compose files
+        run: |
+          for f in recipes/*.yml; do
+            echo "Validating $f..."
+            docker compose -f "$f" config --quiet
+          done
 
   line-length:
     name: Giant-Line Regression
@@ -73,6 +84,53 @@ jobs:
             echo "PASS: No lines exceed 300 characters."
           fi
           exit "$status"
+
+  stack-test:
+    name: Live Stack Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create required files
+        run: |
+          mkdir -p secrets
+          echo -n "placeholder" > secrets/db_password.txt
+          cp .env.example .env
+
+      - name: Start the stack
+        run: docker compose up -d
+
+      - name: Wait for containers to initialise
+        run: sleep 15
+
+      - name: Verify containers are running
+        run: |
+          echo "=== Container status ==="
+          docker compose ps
+          echo ""
+          # Check that no container exited or restarted
+          unhealthy=$(docker compose ps --format json | \
+            python3 -c "
+          import sys, json
+          bad = []
+          for line in sys.stdin:
+              line = line.strip()
+              if not line:
+                  continue
+              c = json.loads(line)
+              state = c.get('State', '')
+              if state not in ('running',):
+                  bad.append(f\"{c.get('Name','?')}: {state}\")
+          if bad:
+              for b in bad:
+                  print(f'FAIL: {b}')
+              sys.exit(1)
+          print('PASS: All containers are running.')
+          ")
+
+      - name: Tear down the stack
+        if: always()
+        run: docker compose down
 
   link-check:
     name: Link Check
