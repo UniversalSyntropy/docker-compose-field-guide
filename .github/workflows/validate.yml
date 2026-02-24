@@ -99,9 +99,12 @@ jobs:
           sed -i 's|DATA_DIR=/mnt/data|DATA_DIR=/tmp/docker-data|' .env
           mkdir -p /tmp/docker-data/postgres /tmp/docker-data/redis
 
-      - name: Substitute placeholder image for CI
+      - name: Adapt template for CI
         run: |
           sed -i 's|image: your-app:1.0.0|image: nginx:1.27-alpine|' docker-compose.yml
+          # Postgres needs DAC_OVERRIDE, FOWNER, SETGID, SETUID to initialise
+          sed -i '/container_name: database/a\    cap_add:\n      - DAC_OVERRIDE\n      - FOWNER\n      - SETGID\n      - SETUID' docker-compose.yml
+          docker compose config --quiet
 
       - name: Start the stack and wait for healthy
         run: docker compose up -d --wait --wait-timeout 120
