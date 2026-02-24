@@ -59,6 +59,7 @@ A reference for building Docker Compose stacks that are well-structured, securit
 
 | If you want to... | Go here |
 |--------------------|---------|
+| Try a working demo stack first | [Quickstart](quickstart/) |
 | Learn what Docker & Compose are | [DOCKER-BASICS.md](docs/DOCKER-BASICS.md) |
 | Set up a new stack properly | [Best Practices](docs/BEST-PRACTICES.md) |
 | Deploy a real app (Pi-hole, Nextcloud) | [Recipes](recipes/) |
@@ -76,31 +77,41 @@ A reference for building Docker Compose stacks that are well-structured, securit
 
 ## Quick start
 
-```bash
-# 1. Clone and use as a reference
-git clone https://github.com/UniversalSyntropy/docker-compose-field-guide.git
-cd docker-compose-field-guide
+### Try the quickstart stack
 
-# 2. Copy the template into your project
+A ready-to-run stack with a dashboard and monitoring tool that demonstrates
+every pattern in this guide:
+
+```bash
+cd quickstart
+cp .env.example .env
+docker compose up -d
+# Dashboard: http://localhost:3000   Monitoring: http://localhost:3001
+```
+
+See [quickstart/README.md](quickstart/README.md) for setup details.
+
+### Use the template in your own project
+
+```bash
+# 1. Copy the template into your project
 cp docker-compose.yml ~/my-project/docker-compose.yml
 cp .env.example ~/my-project/.env
 
-# 3. Create secrets (never committed to git)
+# 2. Create secrets (never committed to git)
 mkdir -p ~/my-project/secrets
 echo -n "your-password" > ~/my-project/secrets/db_password.txt
 
-# 4. Validate before deploying
+# 3. Validate before deploying
 cd ~/my-project
 docker compose config --quiet
 
-# 5. Deploy
+# 4. Deploy
 docker compose up -d
 
-# 6. Verify
+# 5. Verify
 docker compose ps
 ```
-
-All containers should show status "Up" or "healthy".
 
 > The template is a **starting point**, not a drop-in solution. You'll need to swap in your own images, volumes, and secrets. The annotations explain what each block does and why.
 
@@ -267,6 +278,11 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 
 ```text
 ├── README.md                              ← You are here
+├── quickstart/
+│   ├── README.md                          ← Try this first — working demo stack
+│   ├── docker-compose.yml                 ← Homepage dashboard + Uptime Kuma monitoring
+│   ├── .env.example                       ← Quickstart environment template
+│   └── config/homepage/                   ← Dashboard configuration files
 ├── CONTRIBUTING.md                        ← How to contribute
 ├── SECURITY.md                            ← Security policy
 ├── CHANGELOG.md                           ← What changed

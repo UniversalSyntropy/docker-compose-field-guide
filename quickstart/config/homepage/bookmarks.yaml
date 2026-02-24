@@ -1,0 +1,21 @@
+---
+# Bookmarks — quick links to Docker Compose Field Guide resources.
+# See: https://gethomepage.dev/configs/bookmarks/
+- Field Guide:
+    - Best Practices:
+        - abbr: BP
+          href: https://github.com/UniversalSyntropy/docker-compose-field-guide/blob/main/docs/BEST-PRACTICES.md
+    - Troubleshooting:
+        - abbr: TS
+          href: https://github.com/UniversalSyntropy/docker-compose-field-guide/blob/main/docs/TROUBLESHOOTING.md
+    - Recipes:
+        - abbr: RC
+          href: https://github.com/UniversalSyntropy/docker-compose-field-guide/tree/main/recipes
+
+- Docker Docs:
+    - Compose Reference:
+        - abbr: DC
+          href: https://docs.docker.com/reference/compose-file/
+    - CIS Benchmark:
+        - abbr: CI
+          href: https://www.cisecurity.org/benchmark/docker

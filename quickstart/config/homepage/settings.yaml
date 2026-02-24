@@ -1,0 +1,9 @@
+---
+# Dashboard settings
+# See: https://gethomepage.dev/configs/settings/
+title: Docker Compose Field Guide
+theme: dark
+color: blue
+headerStyle: boxedWidgets
+showStats: true
+statusStyle: dot
