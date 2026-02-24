@@ -1,0 +1,6 @@
+---
+# Docker socket — enables auto-discovery of labelled containers.
+# Homepage reads container names, labels, and status. It never modifies containers.
+# See: https://gethomepage.dev/configs/docker/
+local:
+  socket: /var/run/docker.sock
