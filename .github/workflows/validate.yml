@@ -96,16 +96,15 @@ jobs:
           mkdir -p secrets
           echo -n "placeholder" > secrets/db_password.txt
           cp .env.example .env
+          sed -i 's|DATA_DIR=/mnt/data|DATA_DIR=/tmp/docker-data|' .env
+          mkdir -p /tmp/docker-data/postgres /tmp/docker-data/redis
 
       - name: Substitute placeholder image for CI
         run: |
           sed -i 's|image: your-app:1.0.0|image: nginx:1.27-alpine|' docker-compose.yml
 
-      - name: Start the stack
-        run: docker compose up -d
-
-      - name: Wait for containers to initialise
-        run: sleep 15
+      - name: Start the stack and wait for healthy
+        run: docker compose up -d --wait --wait-timeout 120
 
       - name: Verify containers are running
         run: |
