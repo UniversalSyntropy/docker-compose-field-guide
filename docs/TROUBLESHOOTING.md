@@ -536,7 +536,7 @@ Healthcheck failing?
 ## See also
 
 - [Docker Basics](DOCKER-BASICS.md) — core concepts, installation, alternative runtimes
-- [Best Practices](BEST-PRACTICES.md) — comprehensive reference for building stacks right
+- [Best Practices](BEST-PRACTICES.md) — detailed reference for building stacks right
 - [Helper Scripts](../scripts/) — automated reset, cleanup, and disk reporting
 
 ---

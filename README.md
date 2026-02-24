@@ -1,6 +1,6 @@
 # Docker Compose Field Guide
 
-A reference for building Docker Compose stacks that are well-structured, security-hardened, and easy to maintain. Aimed at homelabs and self-hosted setups.
+A reference for building Docker Compose stacks that are well-structured, security-hardened, and straightforward to maintain. Aimed at homelabs and self-hosted setups.
 
 > **Requires:** Docker Engine 24+ with Docker Compose v2 (`docker compose` plugin).
 >
@@ -348,6 +348,36 @@ If you find an error or a gap, [open an issue](https://github.com/UniversalSyntr
 - [CIS Docker Benchmark](https://www.cisecurity.org/benchmark/docker) — container isolation, resource limits, capabilities
 - [OWASP Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html) — secrets, images, networking
 - [Docker Compose specification](https://docs.docker.com/reference/compose-file/) — authoritative reference for all directives
+
+---
+
+## Troubleshooting quick fixes
+
+### Service can't connect to another service
+
+**Likely cause:** Using `localhost` instead of the service name. Inside a Compose network, `localhost` means the container itself.
+
+**Fix:** Use the service name as the hostname (e.g., `database:5432`, not `localhost:5432`).
+
+### Data disappeared after restart
+
+**Likely cause:** Data was stored in the container filesystem or an anonymous volume, or `down -v` deleted named volumes.
+
+**Fix:** Use explicit named volumes or bind mounts for all persistent data. Restore from backup if available.
+
+### Port conflict ("address already in use")
+
+**Likely cause:** Another container or host process is using the port.
+
+**Fix:**
+
+```bash
+docker ps --format "table {{.Names}}\t{{.Ports}}"
+docker compose down --remove-orphans
+docker compose up -d
+```
+
+For the full debugging playbook, decision tree, and more fixes, see [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ---
 

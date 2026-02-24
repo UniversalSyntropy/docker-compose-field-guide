@@ -38,7 +38,7 @@ Cached layers from previous `docker build` runs. Speeds up rebuilds but accumula
 
 ### Capabilities (Linux)
 
-Fine-grained permissions that break down what "root" can do. Docker best practice is to drop all capabilities (`cap_drop: [ALL]`) and add back only the specific ones a service needs (`cap_add:`). See [Security Hardening](BEST-PRACTICES.md#3-security-hardening).
+Fine-grained permissions that break down what "root" can do. The recommended default is to drop all capabilities (`cap_drop: [ALL]`) and add back only the specific ones a service needs (`cap_add:`). See [Security Hardening](BEST-PRACTICES.md#3-security-hardening).
 
 ### CIS Docker Benchmark
 

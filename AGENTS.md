@@ -1,6 +1,6 @@
 # Docker Compose Field Guide — agent instructions
 
-This repo is a comprehensive Docker Compose reference. Follow these standards when working on Docker Compose tasks.
+This repo is a detailed Docker Compose reference. Follow these standards when working on Docker Compose tasks.
 
 ## Setup commands
 

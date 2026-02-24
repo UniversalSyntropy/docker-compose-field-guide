@@ -1611,7 +1611,7 @@ Diagnose the issue and provide the fix. Consider:
 #### Prompt: Generate test plan
 
 ```text
-Generate a comprehensive test plan for this Docker Compose stack.
+Generate a thorough test plan for this Docker Compose stack.
 For each service, provide the exact commands to verify:
 
 1. FUNCTIONAL: Service starts and serves its purpose
