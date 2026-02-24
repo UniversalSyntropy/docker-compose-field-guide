@@ -20,7 +20,7 @@ How to use this repo as a shared knowledge base for AI coding agents — Claude 
 
 ## 1. Why this repo works as a skill pack
 
-> **In a nutshell:** This repo already contains everything a coding agent needs to work reliably with Docker Compose — standards, examples, troubleshooting workflows, safety rules, and validation commands. Wrapping it as a skill pack just makes that knowledge accessible to the agent automatically.
+> **In a nutshell:** This repo already contains everything a coding agent needs to work reliably with Docker Compose — standards, examples, troubleshooting workflows, safety rules, and validation commands. Wrapping it as a skill pack makes that knowledge accessible to the agent automatically.
 
 A coding agent working on Docker Compose stacks benefits from:
 
@@ -30,7 +30,7 @@ A coding agent working on Docker Compose stacks benefits from:
 - **Validation commands** — so it checks its own work
 - **Examples** — so it has known-good templates to reference
 
-This repo already has all of that. The skill pack setup just connects it to the tools you use.
+This repo already has all of that. The skill pack setup connects it to the tools you use.
 
 ---
 

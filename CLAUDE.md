@@ -1,6 +1,6 @@
 # Docker Compose Field Guide — project instructions
 
-This repo is a comprehensive Docker Compose reference. When working on Docker Compose tasks in this repo or in projects that reference it, follow these standards.
+This repo is a detailed Docker Compose reference. When working on Docker Compose tasks in this repo or in projects that reference it, follow these standards.
 
 ## Scope
 
