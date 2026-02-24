@@ -97,6 +97,10 @@ jobs:
           echo -n "placeholder" > secrets/db_password.txt
           cp .env.example .env
 
+      - name: Substitute placeholder image for CI
+        run: |
+          sed -i 's|image: your-app:1.0.0|image: nginx:1.27-alpine|' docker-compose.yml
+
       - name: Start the stack
         run: docker compose up -d
 
