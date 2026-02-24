@@ -99,36 +99,16 @@ jobs:
           sed -i 's|DATA_DIR=/mnt/data|DATA_DIR=/tmp/docker-data|' .env
           mkdir -p /tmp/docker-data/postgres /tmp/docker-data/redis
 
-      - name: Create CI compose override
+      - name: Adapt template for CI
         run: |
-          printf '%s\n' \
-            'services:' \
-            '  app:' \
-            '    image: nginx:1.27-alpine' \
-            '    security_opt: []' \
-            '    cap_drop: []' \
-            '  database:' \
-            '    security_opt: []' \
-            '    cap_drop: []' \
-            '  cache:' \
-            '    security_opt: []' \
-            '    cap_drop: []' \
-            > docker-compose.ci.yml
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml config --quiet
-
-      - name: Show merged config (debug)
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml config
+          sed -i 's|image: your-app:1.0.0|image: nginx:1.27-alpine|' docker-compose.yml
+          sed -i '/<<: \*default-security/d' docker-compose.yml
+          sed -i '/no-new-privileges/d' docker-compose.yml
+          sed -i '/cap_drop:/,/- ALL/d' docker-compose.yml
+          docker compose config --quiet
 
       - name: Start the stack and wait for healthy
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
-          sleep 5
-          echo "=== Container status ==="
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml ps -a
-          echo "=== Database logs ==="
-          docker logs database 2>&1 || true
-          echo "=== Waiting for healthy ==="
-          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait --wait-timeout 120
+        run: docker compose up -d --wait --wait-timeout 120
 
       - name: Verify containers are running
         run: |
