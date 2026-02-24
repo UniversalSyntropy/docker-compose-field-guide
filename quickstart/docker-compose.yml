@@ -1,0 +1,159 @@
+# =============================================================================
+# QUICKSTART STACK — Homepage Dashboard + Uptime Kuma Monitoring
+# =============================================================================
+# A working two-service stack that demonstrates every pattern from the
+# Docker Compose Field Guide: YAML anchors, security hardening, healthchecks,
+# resource limits, log rotation, network isolation, and Docker labels.
+#
+# What you get:
+#   - Homepage:    A dashboard that auto-discovers your Docker containers
+#   - Uptime Kuma: A monitoring tool with a status page for service health
+#
+# Requirements:
+#   - Docker Engine 24+
+#   - Docker Compose v2
+#
+# Usage:
+#   cp .env.example .env              # Create your environment file
+#   docker compose up -d              # Start the stack
+#   docker compose ps                 # Verify everything is healthy
+#
+# Access:
+#   Dashboard:  http://localhost:3000
+#   Monitoring: http://localhost:3001
+#
+# Teardown:
+#   docker compose down               # Stop containers (data preserved)
+#   docker compose down -v            # Stop containers AND delete data
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# REUSABLE CONFIGURATION BLOCKS (YAML Anchors)
+# -----------------------------------------------------------------------------
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"                      # Cap each log file at 10MB
+    max-file: "3"                        # Keep 3 rotated files (30MB max per container)
+
+x-security: &default-security
+  security_opt:
+    - no-new-privileges:true             # CIS 5.25 — block setuid privilege escalation
+  cap_drop:
+    - ALL                                # CIS 5.3  — drop all Linux capabilities by default
+
+# =============================================================================
+# SERVICES
+# =============================================================================
+services:
+
+  # ---------------------------------------------------------------------------
+  # HOMEPAGE — Dashboard with Docker auto-discovery
+  # Web UI: http://localhost:3000
+  #
+  # Demonstrates: YAML anchors, Docker socket (read-only), bind-mounted config,
+  #               Docker labels, healthcheck, resource limits, security defaults
+  # ---------------------------------------------------------------------------
+  homepage:
+    container_name: homepage
+    image: ghcr.io/gethomepage/homepage:v1.2.0
+    <<: *default-security
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache                 # Next.js page cache (ephemeral)
+    volumes:
+      - ./config/homepage:/app/config:ro
+      # EXCEPTION: Docker socket gives root-equivalent host access.
+      # Compensation: mounted read-only, Homepage only reads container
+      # metadata (names, labels, status). For stronger isolation,
+      # consider a Docker socket proxy (see BEST-PRACTICES.md S3.5).
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "${HOMEPAGE_PORT:-3000}:3000"
+    environment:
+      - TZ=${TZ:-UTC}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - HOMEPAGE_ALLOWED_HOSTS=*         # Accept any hostname — safe for LAN-only
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 200
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - homepage.group=Quickstart Stack
+      - homepage.name=Homepage
+      - homepage.icon=homepage.png
+      - homepage.href=http://localhost:${HOMEPAGE_PORT:-3000}
+      - homepage.description=Dashboard with Docker auto-discovery
+      - homepage.weight=1
+    networks:
+      - frontend
+
+  # ---------------------------------------------------------------------------
+  # UPTIME KUMA — Service health monitoring with status page
+  # Web UI: http://localhost:3001
+  #
+  # Demonstrates: YAML anchors, healthcheck with built-in binary,
+  #               Docker labels for Homepage discovery, resource limits,
+  #               persistent volume, security defaults
+  #
+  # First-run setup:
+  #   1. Open http://localhost:3001
+  #   2. Create an admin account (prompted automatically)
+  #   3. Add Homepage (http://homepage:3000) as a monitor
+  #   4. Create a status page with slug "default" for the Homepage widget
+  # ---------------------------------------------------------------------------
+  uptime-kuma:
+    container_name: uptime-kuma
+    image: louislam/uptime-kuma:2.1.1
+    <<: *default-security
+    # read_only not practical — Uptime Kuma writes SQLite to /app/data.
+    # Compensation: no-new-privileges set, capabilities dropped.
+    tmpfs:
+      - /tmp
+    volumes:
+      - ${DATA_DIR:-./data}/uptime-kuma:/app/data
+    ports:
+      - "${UPTIME_KUMA_PORT:-3001}:3001"
+    environment:
+      - TZ=${TZ:-UTC}
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 200
+    restart: unless-stopped
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "extra/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - homepage.group=Quickstart Stack
+      - homepage.name=Uptime Kuma
+      - homepage.icon=uptime-kuma.png
+      - homepage.href=http://localhost:${UPTIME_KUMA_PORT:-3001}
+      - homepage.description=Service health monitoring
+      - homepage.weight=2
+      # Widget: shows live status from Uptime Kuma's status page.
+      # Requires a status page with slug "default" (see first-run setup above).
+      - homepage.widget.type=uptimekuma
+      - homepage.widget.url=http://uptime-kuma:3001
+      - homepage.widget.slug=default
+    networks:
+      - frontend
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  frontend:
+    driver: bridge

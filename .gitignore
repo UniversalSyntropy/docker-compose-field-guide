@@ -6,6 +6,9 @@ secrets/
 .env.local
 .env.*.local
 
+# Persistent data from local runs (quickstart, etc.)
+quickstart/data/
+
 # Backup files
 *.bak
 *.backup

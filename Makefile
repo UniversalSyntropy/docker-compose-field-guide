@@ -63,6 +63,9 @@ compose-check:
 		docker compose -f "$$f" config --quiet 2>/dev/null \
 			|| echo "SKIP: $$f requires secrets (see recipe header)"; \
 	done
+	@echo "Validating quickstart/docker-compose.yml..."
+	@test -f quickstart/.env && docker compose -f quickstart/docker-compose.yml config --quiet 2>/dev/null \
+		|| echo "SKIP: quickstart requires .env (cp quickstart/.env.example quickstart/.env)"
 
 # ── Link check (local — offline, internal links only) ─────────────────
 link-check:

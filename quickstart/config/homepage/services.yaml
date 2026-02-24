@@ -1,0 +1,3 @@
+---
+# Services are auto-discovered from Docker labels.
+# To add manual services, see: https://gethomepage.dev/configs/services/

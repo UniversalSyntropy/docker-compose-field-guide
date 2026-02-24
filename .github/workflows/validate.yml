@@ -63,6 +63,11 @@ jobs:
             docker compose -f "$f" config --quiet
           done
 
+      - name: Validate quickstart compose file
+        run: |
+          cp quickstart/.env.example quickstart/.env
+          docker compose -f quickstart/docker-compose.yml config --quiet
+
   line-length:
     name: Giant-Line Regression
     runs-on: ubuntu-latest
