@@ -116,8 +116,19 @@ jobs:
             > docker-compose.ci.yml
           docker compose -f docker-compose.yml -f docker-compose.ci.yml config --quiet
 
+      - name: Show merged config (debug)
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml config
+
       - name: Start the stack and wait for healthy
-        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait --wait-timeout 120
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+          sleep 5
+          echo "=== Container status ==="
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml ps -a
+          echo "=== Database logs ==="
+          docker logs database 2>&1 || true
+          echo "=== Waiting for healthy ==="
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --wait --wait-timeout 120
 
       - name: Verify containers are running
         run: |
