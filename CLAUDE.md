@@ -64,6 +64,15 @@ When something fails, follow this order:
 
 See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for the full debugging playbook.
 
+## MCP server
+
+This repo includes an MCP server (`mcp-server/server.py`) that exposes the
+field guide as tools. If your session has it registered, call
+`get_best_practices`, `get_compose_template`, `list_recipes`, or
+`check_compose_text` to load context or lint compose YAML on demand.
+
+See [mcp-server/README.md](mcp-server/README.md) for setup.
+
 ## Key documentation
 
 | Topic | File |
@@ -79,3 +88,4 @@ See [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for the full debugging playboo
 | Hardened recipes | [recipes/](recipes/) |
 | Monitoring stack | [monitoring/](monitoring/) |
 | Helper scripts | [scripts/](scripts/) |
+| MCP server (AI tool access) | [mcp-server/](mcp-server/README.md) |
