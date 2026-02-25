@@ -15,6 +15,7 @@ How to use this repo as a shared knowledge base for AI coding agents — Claude 
 5. [Per-tool setup](#5-per-tool-setup)
 6. [Practical setup plan](#6-practical-setup-plan)
 7. [Repo structure for multi-agent support](#7-repo-structure-for-multi-agent-support)
+8. [MCP server](#8-mcp-server)
 
 ---
 
@@ -281,11 +282,58 @@ The instruction files are deliberately concise — they reference the detailed d
 
 ---
 
+## 8. MCP server
+
+The `mcp-server/` directory contains a
+[Model Context Protocol](https://modelcontextprotocol.io/) server that exposes
+the field guide as tools for AI agents. This works across Claude Code, VS Code
+with Copilot, and any MCP-compatible client.
+
+The MCP server provides 11 tools including `get_best_practices`,
+`get_compose_template`, `list_recipes`, and `check_compose_text` (a linter
+that checks compose YAML against field guide standards).
+
+See [mcp-server/README.md](../mcp-server/README.md) for setup instructions.
+
+### Register globally
+
+Once registered, every session gets access to the field guide tools — no
+per-project configuration needed.
+
+**Claude Code:**
+
+```bash
+claude mcp add \
+  --transport stdio \
+  --scope user \
+  docker-compose-field-guide -- \
+  python3.10 /path/to/docker-compose-field-guide/mcp-server/server.py
+```
+
+**VS Code** — add to your user `settings.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "docker-compose-field-guide": {
+        "command": "python3.10",
+        "args": ["/path/to/docker-compose-field-guide/mcp-server/server.py"],
+        "type": "stdio"
+      }
+    }
+  }
+}
+```
+
+---
+
 ## See also
 
 - [Best Practices](BEST-PRACTICES.md) — the standards these agents enforce
 - [Troubleshooting](TROUBLESHOOTING.md) — the debugging workflow agents should follow
 - [LLM-Assisted Workflow](BEST-PRACTICES.md#19-llm-assisted-stack-design-workflow) — prompt templates for stack design and review
+- [MCP Server](../mcp-server/README.md) — expose field guide tools via Model Context Protocol
 
 ---
 
