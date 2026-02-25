@@ -73,6 +73,18 @@ field guide as tools. If your session has it registered, call
 
 See [mcp-server/README.md](mcp-server/README.md) for setup.
 
+## Cross-system MCP integration
+
+Before suggesting architectural changes to this repo, check the `obsidian-vault`
+and `llm-house-style` MCP servers if they are available in the session:
+
+- **`llm-house-style`** — load style rules, check drafts for banned phrases,
+  and select the correct template before writing or editing documentation
+- **`obsidian-vault`** — search the knowledge base for prior decisions,
+  append checkpoint entries to the daily log after significant changes
+
+If neither server is registered, proceed without them — but note the gap.
+
 ## Key documentation
 
 | Topic | File |

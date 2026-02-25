@@ -15,6 +15,13 @@ quickstart/data/
 *.orig
 *.tmp
 
+# UniversalSyntropy AI Brain — do not track in Git
+# Prevents sync conflicts, data leaks, and bloated repos
+UniversalSyntropy-Vault/
+.obsidian/
+*.sync-conflict-*
+.stfolder/
+
 # OS files
 .DS_Store
 Thumbs.db
