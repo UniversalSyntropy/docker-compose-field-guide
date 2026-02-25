@@ -4,6 +4,8 @@
 
 ### Added
 
+- **MCP server:** Model Context Protocol server exposing 11 tools for AI coding agents — compose standards, best practices, troubleshooting, annotated template, guides, recipes, scripts, and a compose linter (`mcp-server/`). Works with Claude Code, VS Code, Cursor, and any MCP-compatible client
+- **Quickstart stack:** Homepage dashboard + Uptime Kuma monitoring — a working two-service demo that follows all field guide patterns (`quickstart/`)
 - **Recipes:** Hardened compose templates for Pi-hole, Nextcloud (+MariaDB +Redis), and Traefik v3 reverse proxy with automatic HTTPS (`recipes/`)
 - **Reverse proxy guide:** Architecture overview, Traefik quick start, certificate methods (HTTP challenge, DNS challenge, local CA), multi-stack networking (`docs/REVERSE-PROXY.md`)
 - **Advanced secrets management guide:** SOPS + age, Doppler, git-crypt walkthrough with comparison table (`docs/SECRETS-MANAGEMENT.md`)

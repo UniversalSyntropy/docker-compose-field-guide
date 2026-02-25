@@ -1476,6 +1476,8 @@ Assess each service in your stack:
 ## 19. LLM-assisted stack design workflow
 
 > **In a nutshell:** Copy-paste these prompt templates into an LLM to get it to design, critique, deploy, test, and maintain your Docker Compose stack. Each phase has a specific prompt that feeds the right context to the LLM.
+>
+> **MCP shortcut:** If your coding agent has the field guide MCP server registered, you can skip the manual context pasting. The agent can call `get_best_practices`, `get_compose_template`, and `check_compose_text` directly. See [mcp-server/README.md](../mcp-server/README.md) for setup.
 
 ### 19.1 Phase 1 — requirements and design
 

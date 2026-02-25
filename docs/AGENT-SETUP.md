@@ -202,6 +202,25 @@ Cursor has both Rules (always-on constraints) and Skills (reusable task workflow
 - Put repo policy into `.cursor/rules/` (adapt from `CLAUDE.md` or `AGENTS.md`)
 - Put reusable workflows into Cursor Skills
 - Keep skills small and focused — one clear job each
+- Register the MCP server for tool access (see [Section 8](#8-mcp-server))
+
+**MCP setup for Cursor** — create `.cursor/mcp.json` in your project or home
+directory:
+
+```json
+{
+  "mcpServers": {
+    "docker-compose-field-guide": {
+      "command": "python3.10",
+      "args": ["<PATH_TO_REPO>/mcp-server/server.py"]
+    }
+  }
+}
+```
+
+Replace `<PATH_TO_REPO>` with the absolute path to your clone. Cursor agents
+can then call `get_best_practices`, `check_compose_text`, and other tools
+during chat and composer sessions.
 
 ### 5.5 VS Code and Visual Studio
 
@@ -211,6 +230,7 @@ Both use Copilot's instruction files — the same files from [5.3](#53-github-co
 
 - Reuse `.github/copilot-instructions.md` (already created)
 - Optionally add `.github/instructions/*.instructions.md` for path-specific guidance
+- Register the MCP server for tool access (see [Section 8](#8-mcp-server))
 - File-based instructions are the recommended approach (settings-based options are being deprecated)
 
 ---

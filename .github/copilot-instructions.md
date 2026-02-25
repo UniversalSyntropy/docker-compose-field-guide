@@ -37,9 +37,17 @@ Follow this order: validate → inspect → logs → minimal patch → revalidat
 
 See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) for the full debugging playbook.
 
+## MCP server
+
+This repo includes an MCP server at `mcp-server/server.py`. If registered in
+your VS Code MCP settings, call `get_best_practices`, `get_compose_template`,
+`list_recipes`, or `check_compose_text` to load context or lint compose YAML.
+
+See [mcp-server/README.md](../mcp-server/README.md) for setup.
+
 ## Documentation map
 
-- Best practices: [DOCKER-COMPOSE-BEST-PRACTICES.md](../docs/BEST-PRACTICES.md)
+- Best practices: [BEST-PRACTICES.md](../docs/BEST-PRACTICES.md)
 - Troubleshooting: [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md)
 - Docker basics: [DOCKER-BASICS.md](../docs/DOCKER-BASICS.md)
 - Glossary: [GLOSSARY.md](../docs/GLOSSARY.md)
@@ -47,3 +55,4 @@ See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) for the full debugging play
 - Template: [docker-compose.yml](../docker-compose.yml)
 - Monitoring: [monitoring/](../monitoring/)
 - Scripts: [scripts/](../scripts/)
+- MCP server: [mcp-server/](../mcp-server/README.md)

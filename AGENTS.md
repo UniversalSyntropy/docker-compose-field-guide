@@ -67,11 +67,19 @@ Full debugging playbook: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 - Remove `container_name` from anything that might scale
 - Compose is manual `--scale`, not autoscaling
 
+## MCP server
+
+This repo includes an MCP server at `mcp-server/server.py`. If registered,
+call `get_best_practices`, `get_compose_template`, `list_recipes`, or
+`check_compose_text` to load context or lint compose YAML directly.
+
+See [mcp-server/README.md](mcp-server/README.md) for setup.
+
 ## File map
 
 | What you need | Where to look |
 |---------------|---------------|
-| Compose best practices | [DOCKER-COMPOSE-BEST-PRACTICES.md](docs/BEST-PRACTICES.md) |
+| Compose best practices | [BEST-PRACTICES.md](docs/BEST-PRACTICES.md) |
 | Troubleshooting & debugging | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
 | Docker basics | [DOCKER-BASICS.md](docs/DOCKER-BASICS.md) |
 | Term definitions | [GLOSSARY.md](docs/GLOSSARY.md) |
@@ -79,3 +87,4 @@ Full debugging playbook: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 | Annotated template | [docker-compose.yml](docker-compose.yml) |
 | Monitoring stack | [monitoring/](monitoring/) |
 | Helper scripts | [scripts/](scripts/) |
+| MCP server | [mcp-server/](mcp-server/README.md) |
