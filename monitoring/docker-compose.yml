@@ -83,7 +83,7 @@ services:
   # ---------------------------------------------------------------------------
   node-exporter:
     container_name: node-exporter
-    image: prom/node-exporter:v1.10.2    # Pin exact — v1 tag doesn't exist
+    image: prom/node-exporter:v1.11.1    # Pin exact — v1 tag doesn't exist
     <<: *default-security
     read_only: true
     command:
