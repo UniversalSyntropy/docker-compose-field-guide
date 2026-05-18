@@ -108,7 +108,7 @@ services:
   # ---------------------------------------------------------------------------
   database:
     container_name: database
-    image: postgres:16.6                 # Pin to exact version
+    image: postgres:18.4                 # Pin to exact version
     <<: *default-security
     volumes:
       - ${DATA_DIR}/postgres:/var/lib/postgresql/data
