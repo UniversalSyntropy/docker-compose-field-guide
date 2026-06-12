@@ -43,7 +43,10 @@ services:
   # ---------------------------------------------------------------------------
   nextcloud:
     container_name: nextcloud
-    image: nextcloud:30.0.6-apache
+    # Nextcloud majors get roughly a year of support, and existing installs
+    # must upgrade one major at a time — don't jump an existing 30.x install
+    # straight to this tag.
+    image: nextcloud:32.0.5-apache
     # --- Security ---
     # Cannot use <<: *default-security because Apache binds to port 80.
     security_opt:
@@ -105,7 +108,7 @@ services:
   # ---------------------------------------------------------------------------
   nextcloud-db:
     container_name: nextcloud-db
-    image: mariadb:11.7.2
+    image: mariadb:11.8.4
     <<: *default-security
     # EXCEPTION: MariaDB needs SYS_NICE for thread priority management.
     # Without it, the container logs warnings on every startup.
@@ -147,7 +150,7 @@ services:
   # ---------------------------------------------------------------------------
   nextcloud-cache:
     container_name: nextcloud-cache
-    image: redis:7.4.2
+    image: redis:7.4.9
     <<: *default-security
     read_only: true
     tmpfs:
