@@ -49,6 +49,7 @@ sets it apart — your tools follow the same standards you do.
 - **[Advanced secrets management](docs/SECRETS-MANAGEMENT.md)** — graduating from plain-text secrets to SOPS, Doppler, or git-crypt.
 - **[Helper scripts](scripts/)** — safe resets, hard resets, disk reports, and pruning. So you don't have to remember the flags.
 - **[Glossary](docs/GLOSSARY.md) and [index](docs/INDEX.md)** — look up any term, or find where a topic is discussed across the docs.
+- **[Roadmap](docs/ROADMAP.md)** — where v1.2 is headed: per-service validation, CI boot tests, a blocks catalogue, and a much larger recipe set.
 - **[A quickstart stack](quickstart/)** — Homepage dashboard + Uptime Kuma, a working two-service demo of every pattern the guide recommends. Deploy it first if you learn by example.
 - **[An MCP server](mcp-server/)** — 11 tools that let AI agents load the standards, fetch recipes, and lint compose YAML on demand. See [AGENT-SETUP.md](docs/AGENT-SETUP.md) for registration.
 - **[AI agent instructions](docs/AGENT-SETUP.md)** — for Claude Code, Copilot, Codex, and Cursor, so your coding tools follow the same standards you do.

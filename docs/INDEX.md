@@ -224,6 +224,7 @@ A topical index covering every concept across all documents in this repo. Use th
 - MCP server overview and setup (11 tools for AI agents) — [mcp-server/README.md](../mcp-server/README.md)
 - MCP server source — [mcp-server/server.py](../mcp-server/server.py)
 - MCP registration per agent tool — [AGENT-SETUP.md](AGENT-SETUP.md)
+- v1.2 roadmap (validation depth, blocks, recipe waves) — [ROADMAP.md](ROADMAP.md)
 
 ## Reverse Proxy & HTTPS
 

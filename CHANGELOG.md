@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- v1.2 roadmap (`docs/ROADMAP.md`): verification depth (per-service linter, CI boot tests,
+  `validate_compose` tool, pin-currency checks), a hardened blocks catalogue, and a
+  three-wave recipe expansion across ~26 popular self-hosted stacks — each built with the
+  guide, boot-tested, and its learnings rolled back into the guide
+
 ## [1.1.0] - 2026-06-12
 
 ### Added
