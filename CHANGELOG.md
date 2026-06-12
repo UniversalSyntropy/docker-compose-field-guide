@@ -35,7 +35,6 @@
 
 - README: stated the dual human/agent purpose, added a currency note (pins and links rot —
   check the changelog date), listed the quickstart stack and MCP server under what's included
-
 - Accuracy + link fixes from the 2026-06 full review: env precedence, prune behaviour,
   CIS control numbers, Pi-hole v6 env vars, Traefik ping healthcheck, CVE/EOL image bumps
 - MCP server linter fixes from the same review: password patterns anchored to one line
