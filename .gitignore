@@ -26,6 +26,9 @@ UniversalSyntropy-Vault/
 .DS_Store
 Thumbs.db
 
+# Python bytecode
+__pycache__/
+
 # Editor files
 *.swp
 *.swo

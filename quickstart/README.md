@@ -82,4 +82,4 @@ docker compose down -v           # Stop and delete all data
 
 ---
 
-[Back to README](../README.md)
+[← Back to README](../README.md)

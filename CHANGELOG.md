@@ -4,6 +4,8 @@
 
 ### Added
 
+- **GitHub metadata:** repo description, topics, and publication guide (`GITHUB-METADATA.md`)
+- **Vault gitignore rules** and cross-system MCP instructions in `CLAUDE.md`
 - **MCP server:** Model Context Protocol server exposing 11 tools for AI coding agents — compose standards, best practices, troubleshooting, annotated template, guides, recipes, scripts, and a compose linter (`mcp-server/`). Works with Claude Code, VS Code, Cursor, and any MCP-compatible client
 - **Quickstart stack:** Homepage dashboard + Uptime Kuma monitoring — a working two-service demo that follows all field guide patterns (`quickstart/`)
 - **Recipes:** Hardened compose templates for Pi-hole, Nextcloud (+MariaDB +Redis), and Traefik v3 reverse proxy with automatic HTTPS (`recipes/`)
@@ -23,6 +25,8 @@
 
 ### Changed
 
+- Accuracy + link fixes from the 2026-06 full review: env precedence, prune behaviour,
+  CIS control numbers, Pi-hole v6 env vars, Traefik ping healthcheck, CVE/EOL image bumps
 - Applied house style: sentence case headings across all 17 markdown files
 - Replaced `&` with `and` in headings and updated all cross-file anchor links
 - README: added separate "What this is not" section, quick start verification step,

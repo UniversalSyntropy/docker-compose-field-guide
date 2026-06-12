@@ -102,8 +102,7 @@ Use the MCP Inspector for interactive testing:
 npx @modelcontextprotocol/inspector python3.10 mcp-server/server.py
 ```
 
-Or use the test suite from the
-[ai-tools](https://github.com/UniversalSyntropy/ai-tools) repo:
+Or use the MCP test suite, which lives in a private repo (`ai-tools`):
 
 ```bash
 cd <PATH_TO_AI_TOOLS>/mcp-test-suite
@@ -147,4 +146,4 @@ the same review without manual context.
 
 ---
 
-[Back to README](../README.md)
+[← Back to README](../README.md)

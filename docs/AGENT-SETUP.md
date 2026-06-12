@@ -61,11 +61,11 @@ The core content stays the same across tools. Only the delivery format changes.
 | Tool | Instruction file | Mechanism | Docs |
 |------|-----------------|-----------|------|
 | **Claude Code** | `CLAUDE.md` | Project instructions + Skills | [Claude Code docs](https://docs.anthropic.com/en/docs/claude-code) |
-| **OpenAI Codex** | `AGENTS.md` | Agent instructions (read before work) | [Codex docs](https://docs.openai.com/codex) |
+| **OpenAI Codex** | `AGENTS.md` | Agent instructions (read before work) | [Codex docs](https://developers.openai.com/codex) |
 | **GitHub Copilot** | `.github/copilot-instructions.md` | Repo-level custom instructions | [Copilot docs](https://docs.github.com/en/copilot/customizing-copilot) |
 | **Cursor** | `.cursor/rules/*.mdc` | Rules (static) + Skills (dynamic) | [Cursor docs](https://docs.cursor.com) |
-| **VS Code** | `.github/copilot-instructions.md` | Copilot custom instructions + prompt files | [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot) |
-| **Visual Studio** | `.github/copilot-instructions.md` | Same Copilot files as VS Code | [Visual Studio Copilot docs](https://learn.microsoft.com/en-us/visualstudio/ide/copilot) |
+| **VS Code** | `.github/copilot-instructions.md` | Copilot custom instructions + prompt files | [VS Code Copilot docs](https://code.visualstudio.com/docs/copilot/setup) |
+| **Visual Studio** | `.github/copilot-instructions.md` | Same Copilot files as VS Code | [Visual Studio Copilot docs](https://learn.microsoft.com/en-us/visualstudio/ide/visual-studio-github-copilot-install-and-states) |
 
 > **One set of Copilot instructions works across GitHub, VS Code, Visual Studio, and JetBrains** — you don't need separate files for each IDE.
 

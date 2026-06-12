@@ -2,7 +2,7 @@
 
 A structured reference covering every element of a Docker Compose stack — security, storage, networking, resource limits, backups, monitoring, and cross-platform setup. Designed as a reusable foundation you can adapt to any project.
 
-**Last Updated:** February 2026
+**Last updated:** June 2026
 
 > **Compatibility:** This document targets **Docker Engine 24+** with the **Docker Compose v2** plugin (`docker compose`).
 > Runtime keys like `mem_limit`, `cpus`, and `pids_limit` are standard Compose Specification service attributes, but may behave differently in Podman Compose or Docker Swarm.
@@ -1422,7 +1422,7 @@ image: postgres:latest
 
    | Tool | Status | Use When |
    |------|--------|----------|
-   | [Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/) | **Recommended** | Keyless signing via OIDC, widely adopted by CNCF projects |
+   | [Sigstore Cosign](https://docs.sigstore.dev/cosign/) | **Recommended** | Keyless signing via OIDC, widely adopted by CNCF projects |
    | [Notation (Notary v2)](https://notaryproject.dev/) | Emerging | OCI-native signatures, cloud registry integration |
    | Docker Content Trust (DCT/Notary v1) | **Legacy — being retired** | Historical; Docker no longer signs Official Images with DCT |
 
@@ -1730,7 +1730,7 @@ When adding any container to a compose stack:
 - [OWASP Docker Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html)
 - [Docker secrets documentation](https://docs.docker.com/compose/how-tos/use-secrets/)
 - [Docker Content Trust](https://docs.docker.com/engine/security/trust/) (legacy — being retired for Official Images)
-- [Sigstore Cosign](https://docs.sigstore.dev/cosign/overview/) — modern image signature verification
+- [Sigstore Cosign](https://docs.sigstore.dev/cosign/) — modern image signature verification
 - [Notation / Notary Project](https://notaryproject.dev/) — OCI-native image signing
 - [Seccomp security profiles](https://docs.docker.com/engine/security/seccomp/)
 - [AppArmor security profiles](https://docs.docker.com/engine/security/apparmor/)

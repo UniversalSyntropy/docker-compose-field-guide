@@ -287,6 +287,8 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 ├── CONTRIBUTING.md                        ← How to contribute
 ├── SECURITY.md                            ← Security policy
 ├── CHANGELOG.md                           ← What changed
+├── GITHUB-METADATA.md                     ← Repo metadata and publication guide
+├── LICENSE                                ← MIT licence
 ├── CLAUDE.md                              ← Claude Code project instructions
 ├── AGENTS.md                              ← OpenAI Codex agent instructions
 ├── docker-compose.yml                     ← Annotated template (copy into your project)
@@ -306,8 +308,10 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 │   ├── GLOSSARY.md                        ← Definitions for every Docker/Compose term
 │   ├── INDEX.md                           ← Find any topic across all files
 │   ├── STYLE.md                           ← Voice and style guide for contributors
-│   └── AGENT-SETUP.md                     ← Multi-agent skill pack setup guide
+│   ├── AGENT-SETUP.md                     ← Multi-agent skill pack setup guide
+│   └── reviews/                           ← Review reports
 ├── mcp-server/
+│   ├── README.md                         ← MCP server setup and registration
 │   ├── server.py                         ← MCP server — exposes tools for AI agents
 │   └── requirements.txt                  ← Python dependency (mcp>=1.0.0)
 ├── .github/
