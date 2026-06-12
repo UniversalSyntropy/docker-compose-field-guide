@@ -27,6 +27,9 @@
 
 - Accuracy + link fixes from the 2026-06 full review: env precedence, prune behaviour,
   CIS control numbers, Pi-hole v6 env vars, Traefik ping healthcheck, CVE/EOL image bumps
+- MCP server linter fixes from the same review: password patterns anchored to one line
+  (compliant `secrets:` blocks no longer flag as inline passwords), real script descriptions
+  in `list_scripts`, hardened path validation in the `get_*` tools
 - Applied house style: sentence case headings across all 17 markdown files
 - Replaced `&` with `and` in headings and updated all cross-file anchor links
 - README: added separate "What this is not" section, quick start verification step,
