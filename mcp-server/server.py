@@ -111,13 +111,18 @@ def get_guide(filename: str) -> str:
         filename: The guide filename (e.g. 'REVERSE-PROXY.md', 'GLOSSARY.md').
                   Use list_guides() to see available files.
     """
-    path = REPO_ROOT / "docs" / filename
-    if not path.exists():
+    docs_dir = REPO_ROOT / "docs"
+    path = (docs_dir / filename).resolve()
+    # Containment check first — same message as a missing file, so callers
+    # can't probe for the existence of paths outside the repo
+    if path == docs_dir or not path.is_relative_to(docs_dir):
         return f"[guide not found: {filename}]"
-    # Prevent path traversal
-    if not path.resolve().is_relative_to(REPO_ROOT / "docs"):
-        return "[invalid path]"
-    return path.read_text(encoding="utf-8")
+    if not path.is_file():
+        return f"[guide not found: {filename}]"
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        return f"[could not read {filename}: {exc.__class__.__name__}]"
 
 
 # --- Recipes ---
@@ -148,12 +153,16 @@ def get_recipe(filename: str) -> str:
         filename: The recipe filename (e.g. 'pihole.yml', 'nextcloud.yml').
                   Use list_recipes() to see available files.
     """
-    path = REPO_ROOT / "recipes" / filename
-    if not path.exists():
+    recipes_dir = REPO_ROOT / "recipes"
+    path = (recipes_dir / filename).resolve()
+    if path == recipes_dir or not path.is_relative_to(recipes_dir):
         return f"[recipe not found: {filename}]"
-    if not path.resolve().is_relative_to(REPO_ROOT / "recipes"):
-        return "[invalid path]"
-    return path.read_text(encoding="utf-8")
+    if not path.is_file():
+        return f"[recipe not found: {filename}]"
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        return f"[could not read {filename}: {exc.__class__.__name__}]"
 
 
 # --- Scripts ---
@@ -177,7 +186,9 @@ def list_scripts() -> str:
         desc = f.name
         for line in content.split("\n"):
             line = line.strip()
-            if line.startswith("# ") and not line.startswith("#!"):
+            # Skip decoration banners (# ====) — take the first comment
+            # line that contains actual words
+            if line.startswith("# ") and re.search(r"[A-Za-z]", line):
                 desc = line.lstrip("# ").strip()
                 break
         lines.append(f"{f.name}: {desc}")
@@ -194,12 +205,16 @@ def get_script(filename: str) -> str:
         filename: The script filename (e.g. 'safe-reset.sh', 'prune-unused.sh').
                   Use list_scripts() to see available files.
     """
-    path = REPO_ROOT / "scripts" / filename
-    if not path.exists():
+    scripts_dir = REPO_ROOT / "scripts"
+    path = (scripts_dir / filename).resolve()
+    if path == scripts_dir or not path.is_relative_to(scripts_dir):
         return f"[script not found: {filename}]"
-    if not path.resolve().is_relative_to(REPO_ROOT / "scripts"):
-        return "[invalid path]"
-    return path.read_text(encoding="utf-8")
+    if not path.is_file():
+        return f"[script not found: {filename}]"
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        return f"[could not read {filename}: {exc.__class__.__name__}]"
 
 
 # --- Compose validation ---
@@ -254,9 +269,11 @@ def check_compose_text(text: str) -> str:
             issues.append("Add 'security_opt: [no-new-privileges:true]'")
 
     # Check for inline passwords
+    # Patterns stay on a single line: \s crosses newlines, which made a
+    # compliant secrets block (db_password:\n  file: ...) flag as inline
     password_patterns = [
-        r"PASSWORD=(?!.*_FILE)[^\$\{]\w+",
-        r"password:\s*['\"]?\w{4,}['\"]?",
+        r"PASSWORD=(?!.*_FILE)[^\$\{\n]\w+",
+        r"password:[ \t]*['\"]?\w{4,}",
     ]
     for pattern in password_patterns:
         if re.search(pattern, text, re.IGNORECASE):
