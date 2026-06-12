@@ -5,7 +5,7 @@ A structured reference covering every element of a Docker Compose stack — secu
 **Last Updated:** February 2026
 
 > **Compatibility:** This document targets **Docker Engine 24+** with the **Docker Compose v2** plugin (`docker compose`).
-> Some runtime keys (`mem_limit`, `cpus`, `pids_limit`) are Docker-specific and may behave differently in Podman Compose or Docker Swarm.
+> Runtime keys like `mem_limit`, `cpus`, and `pids_limit` are standard Compose Specification service attributes, but may behave differently in Podman Compose or Docker Swarm.
 > The legacy Python-based `docker-compose` (v1) is deprecated and not covered.
 >
 > **Threat model:** This guide assumes a **self-hosted homelab or small-team environment** — services are LAN-facing, not directly exposed to the internet.
@@ -151,7 +151,7 @@ docker compose version    # Should show v2.x.x
 | Major version | `eclipse-mosquitto:2` | Only if the registry publishes a rolling major tag |
 | **Never** | `:latest` | Never in production — unpredictable, unauditable |
 
-> **Gotcha:** Not all images publish major-only tags. For example, `grafana/grafana:12`, `prom/prometheus:v3`, and `prom/node-exporter:v1` do **not** exist. Always verify with `docker pull <image>:<tag>` before committing.
+> **Gotcha:** Rolling major tags may or may not exist — verify on the registry before relying on one. For example, `grafana/grafana:12` does **not** exist, while `prom/prometheus:v3` does. Always verify with `docker pull <image>:<tag>` before committing.
 >
 > **Gotcha (tag mismatch):** A container's internal version may not match any Docker Hub tag.
 > For example, `eclipse-mosquitto:2` pulls an image that reports version `2.1.2` internally, but Docker Hub only publishes `eclipse-mosquitto:2.1.2-alpine` — there is no `eclipse-mosquitto:2.1.2` tag.
@@ -286,7 +286,7 @@ services:
 - Not all images support `_FILE` suffix — check the image documentation
 - Consider encrypting secrets at rest with `age`, `sops`, or `git-crypt` — see the [Advanced Secrets Management guide](SECRETS-MANAGEMENT.md) for a full walkthrough
 
-> **Gotcha:** File-based secrets require Compose v2. Legacy `docker-compose` (Python v1) requires Swarm mode for secrets.
+> **Gotcha:** File-based Compose secrets are plain bind mounts into `/run/secrets/`, not Swarm's encrypted store. Use Compose v2 — the legacy Python `docker-compose` (v1) is deprecated.
 
 ### 3.7 Network segmentation
 
@@ -553,13 +553,17 @@ Provide `.env.example` in your repo as a template. Add `.env` to `.gitignore`.
 
 ### 6.2 Environment variable precedence
 
-From highest to lowest priority:
+From highest to lowest priority (per the official Compose envvars-precedence docs):
 
 1. `docker compose run -e VAR=value` (CLI override)
-2. `environment:` block in the compose file
-3. `--env-file` flag
-4. `.env` file
-5. Host environment variables
+2. Value substituted from your shell or an env file — for `${VAR}` interpolation, the **shell
+   environment beats `.env`/`--env-file`**
+3. `environment:` attribute in the compose file
+4. `env_file:` attribute in the compose file
+5. `ENV` baked into the image (Dockerfile)
+
+> **Note:** `--env-file` replaces `.env` rather than forming a separate precedence tier — they're
+> the same mechanism with a different file path.
 
 ### 6.3 Sensitive vs non-sensitive config
 
@@ -668,7 +672,7 @@ Every container MUST have these set:
 services:
   app:
     mem_limit: 256m        # CIS 5.10 — prevent OOM killing neighbours
-    cpus: 1.0              # CIS 5.12 — prevent CPU starvation
+    cpus: 1.0              # CIS 5.11 — prevent CPU starvation
     pids_limit: 200        # CIS 5.28 — prevent fork bombs
 ```
 
@@ -748,10 +752,17 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s        # How often to check
-      timeout: 10s         # Must be < interval
+      timeout: 10s         # Should be less than interval (Docker doesn't enforce it)
       retries: 3           # Failures before marking unhealthy
       start_period: 30s    # Grace period for slow-starting services
+      start_interval: 5s   # Optional: faster checks during start_period
 ```
+
+> **Note:** `start_interval` needs Compose v2.20.2+ and Docker Engine 25+, which exceeds this
+> guide's Engine 24+ baseline — treat it as optional and drop it on older hosts.
+
+VPN/tunnel and browser-pool services routinely need a `start_period` of 60-120s — a too-short
+`start_period` makes `--wait` and `service_healthy` chains flap.
 
 ### 9.2 Healthcheck patterns by service type
 
@@ -913,6 +924,11 @@ CMD exec node server.js
 > **In a nutshell:** Use Watchtower for automatic updates on non-critical services. Exclude databases and critical services with labels so you can review changelogs before updating them manually.
 
 ### 12.1 Automatic updates with Watchtower
+
+> **Warning:** The Watchtower project (containrrr/watchtower) was archived in December 2025. By
+> this guide's own T5 rule (§18, "no commits in 12+ months") it no longer qualifies for new
+> deployments. Use a maintained fork or the Renovate-style update flows covered in §18.5. The
+> example below stays for reference on existing installs.
 
 ```yaml
 services:
@@ -1237,10 +1253,10 @@ Find your devices: `ls -la /dev/serial/by-id/`
 | Drop all capabilities | 5.3 | `cap_drop: [ALL]` | Privilege escalation via capabilities |
 | No new privileges | 5.25 | `security_opt: [no-new-privileges:true]` | setuid binary exploitation |
 | Memory limits | 5.10 | `mem_limit: 256m` | Denial of service (resource exhaustion) |
-| CPU limits | 5.12 | `cpus: 1.0` | Denial of service (CPU starvation) |
+| CPU limits | 5.11 | `cpus: 1.0` | Denial of service (CPU starvation) |
 | PID limits | 5.28 | `pids_limit: 200` | Fork bomb / PID exhaustion |
 | Read-only filesystem | 5.12 | `read_only: true` + `tmpfs: [/tmp]` | Malware persistence, file drops |
-| Non-root user | 5.21 | `user: "1000:1000"` | Container breakout via root |
+| Non-root user | 4.1 | `user: "1000:1000"` | Container breakout via root |
 
 ### 17.2 Network security
 
@@ -1530,7 +1546,7 @@ Docker Security Cheat Sheet. For each service, check:
 
 1. Is no-new-privileges set? (CIS 5.25)
 2. Are all capabilities dropped with only necessary ones added back? (CIS 5.3)
-3. Are resource limits set (mem_limit, cpus, pids_limit)? (CIS 5.10/5.12/5.28)
+3. Are resource limits set (mem_limit, cpus, pids_limit)? (CIS 5.10/5.11/5.28)
 4. Is the filesystem read-only where possible?
 5. Are secrets properly managed (not in env vars or compose file)?
 6. Is the Docker socket mount necessary and read-only?

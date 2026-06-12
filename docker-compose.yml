@@ -10,8 +10,8 @@
 #
 # Compatibility:
 #   This file targets Docker Engine + Docker Compose v2. Some keys
-#   (mem_limit, cpus, pids_limit) are Docker-specific and may differ
-#   in Podman Compose or Swarm mode.
+#   (mem_limit, cpus, pids_limit) are standard Compose Specification
+#   attributes but may differ in Podman Compose or Swarm mode.
 #
 # Note on container_name:
 #   We use container_name in examples for clarity. In production, omit it
@@ -82,7 +82,7 @@ services:
       # At minimum, never commit the real password — use a placeholder.
       - DATABASE_URL=postgres://app:CHANGE_ME@database:5432/app
     mem_limit: 256m                      # CIS 5.10 — prevent OOM killing neighbours
-    cpus: 1.0                            # CIS 5.12 — prevent CPU starvation
+    cpus: 1.0                            # CIS 5.11 — prevent CPU starvation
     pids_limit: 200                      # CIS 5.28 — prevent fork bombs
     stop_grace_period: 15s               # Time for graceful shutdown before SIGKILL
     restart: unless-stopped              # Auto-restart on crash, not on manual stop
@@ -223,6 +223,8 @@ services:
   # ---------------------------------------------------------------------------
   # EXAMPLE: Auto-updater
   # Demonstrates: Watchtower with selective updates
+  # Warning: the Watchtower project was archived in December 2025 — see
+  # BEST-PRACTICES.md §12.1 for maintained alternatives.
   # ---------------------------------------------------------------------------
   # watchtower:
   #   container_name: watchtower
@@ -248,7 +250,8 @@ services:
 # =============================================================================
 # SECRETS
 # =============================================================================
-# File-based secrets — requires Docker Compose v2.
+# File-based secrets — plain bind mounts into /run/secrets/, not Swarm's
+# encrypted store. Use Docker Compose v2.
 # The secrets/ directory should be in .gitignore.
 # Not all images support _FILE env vars — check the image documentation.
 # =============================================================================

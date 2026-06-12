@@ -409,20 +409,25 @@ docker container prune
 ```bash
 docker image prune          # Dangling images only
 docker image prune -a       # All unused images (not just dangling)
-docker volume prune          # Volumes not attached to any container
+docker volume prune          # Unused ANONYMOUS volumes only (Engine 23+)
+docker volume prune --all    # Unused named volumes too — data loss risk
 docker network prune         # Unused networks
 ```
 
-> **Warning:** `docker volume prune` can remove volumes not currently attached to any container. If your containers are stopped, their volumes may appear "unused."
+> **Warning:** Since Engine 23, `docker volume prune` removes only anonymous volumes by default —
+> named volumes need `--all`. With `--all`, volumes belonging to stopped containers may appear
+> "unused" and get deleted.
 
 ### Level 5: Full global cleanup (use carefully)
 
 ```bash
 docker system prune                # Stopped containers + unused networks + dangling images + build cache
-docker system prune -a --volumes   # Everything above + ALL unused images + ALL unused volumes
+docker system prune -a --volumes   # Everything above + ALL unused images + unused ANONYMOUS volumes
 ```
 
-> **Warning:** `docker system prune -a --volumes` is the nuclear option. It will remove anything not currently attached to a running container. Treat it as a maintenance operation, not a daily workflow.
+> **Warning:** `docker system prune -a --volumes` is the nuclear option for containers, images, and
+> networks. Since Engine 23 it removes only anonymous volumes — named volumes need a separate
+> `docker volume prune --all`. Treat it as a maintenance operation, not a daily workflow.
 
 ### Disk usage report
 
@@ -465,7 +470,8 @@ docker compose up -d --build
 # Show what will be affected
 docker system df
 
-# Remove everything unused
+# Remove everything unused (named volumes survive — prune them with
+# `docker volume prune --all` if you really mean to delete data)
 docker system prune -a --volumes
 ```
 
