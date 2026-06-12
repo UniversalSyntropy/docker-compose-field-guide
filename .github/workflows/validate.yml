@@ -33,6 +33,30 @@ jobs:
       - name: Run ShellCheck
         run: shellcheck scripts/*.sh
 
+  mcp-server-smoke:
+    name: MCP Server Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: pip install -r mcp-server/requirements.txt
+      - name: Import server and run the linter on repo compose files
+        run: |
+          cd mcp-server
+          python -c "
+          import server
+          for f in ['../docker-compose.yml', '../recipes/pihole.yml',
+                    '../recipes/nextcloud.yml', '../recipes/traefik.yml',
+                    '../monitoring/docker-compose.yml',
+                    '../quickstart/docker-compose.yml']:
+              result = server.check_compose_text(open(f).read())
+              assert 'No issues found' in result, f'{f}: {result}'
+          print('server imports; all repo compose files pass the linter')
+          "
+
   compose-validate:
     name: Compose Validation
     runs-on: ubuntu-latest

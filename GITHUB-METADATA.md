@@ -4,6 +4,11 @@ Set these in the repo settings at
 github.com/UniversalSyntropy/docker-compose-field-guide, or apply them with the
 `gh` CLI commands below.
 
+> **Note:** the one-time publication steps (repo settings, topics, `v1.0.0`
+> release) were executed in February 2026. Keep this file as the reference for
+> the metadata values; only re-run a command when the corresponding value
+> changes.
+
 ---
 
 ## Description (About section)

@@ -83,22 +83,21 @@ The most transferable lesson: official images often read only a fixed set of
 env vars — tuning vars the image never documents are silent no-ops. Verify with
 the running process (`SHOW shared_buffers;` and similar), not the compose file.
 
-## Backlog (prioritised)
+## Backlog
 
-1. Apply server.py P1 — the linter contradicting the docs it serves is the worst
-   remaining defect in the repo.
-2. Apply P2 + P3 (small, same file).
-3. Keep MCP client registrations in sync — the review found one client
-   allowlisting the server's tools with no live registration behind it.
-   (Resolved after the review.)
-4. CI smoke test: `python -c "import server"` in validate.yml would have caught
-   the requirements floor bug.
-5. INDEX.md: add quickstart and MCP server entries (currently unindexed).
-6. Sentence-case heading pass on REVERSE-PROXY, SECRETS-MANAGEMENT, STYLE, INDEX,
-   recipes/README — needs coordinated anchor updates, do as one change.
-7. Linter coverage: per-service parsing, untagged images, the 3 unchecked
-   CLAUDE.md standards.
-8. GITHUB-METADATA.md: mark the executed publication steps done or archive it.
+Closed during the review window: server.py P1-P3 plus the untagged-image check
+and a softened linter success message; MCP client registrations re-synced; CI
+smoke test for the MCP server; INDEX.md quickstart/MCP entries; GITHUB-METADATA
+publication note. Released as v1.1.0.
+
+Deferred to the next session on this repo:
+
+1. Sentence-case heading pass on REVERSE-PROXY, SECRETS-MANAGEMENT, STYLE, INDEX,
+   recipes/README — needs coordinated anchor updates across linking docs, do as
+   one change.
+2. Linter depth: per-service parsing (one compliant service currently satisfies
+   a check for the whole file) and the 3 unchecked CLAUDE.md standards
+   (container_name avoidance, read_only+tmpfs, secrets-not-in-.env).
 
 ## Honest assessment
 

@@ -217,6 +217,14 @@ A topical index covering every concept across all documents in this repo. Use th
 - Nextcloud (self-hosted cloud) — [recipes/nextcloud.yml](../recipes/nextcloud.yml)
 - Traefik (reverse proxy with HTTPS) — [recipes/traefik.yml](../recipes/traefik.yml)
 
+## Quickstart Stack & MCP Server
+
+- Quickstart stack (Homepage + Uptime Kuma demo) — [quickstart/README.md](../quickstart/README.md)
+- Quickstart compose file — [quickstart/docker-compose.yml](../quickstart/docker-compose.yml)
+- MCP server overview and setup (11 tools for AI agents) — [mcp-server/README.md](../mcp-server/README.md)
+- MCP server source — [mcp-server/server.py](../mcp-server/server.py)
+- MCP registration per agent tool — [AGENT-SETUP.md](AGENT-SETUP.md)
+
 ## Reverse Proxy & HTTPS
 
 - Architecture overview — [REVERSE-PROXY.md](REVERSE-PROXY.md)

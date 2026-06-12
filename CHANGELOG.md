@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2026-06-12
 
 ### Added
 
@@ -22,6 +22,14 @@
 - CHANGELOG.md
 - Issue templates (bug report, feature request)
 - Pull request template
+- CI smoke test: imports the MCP server and runs the linter over all repo compose files
+- INDEX.md entries for the quickstart stack and MCP server
+
+### Fixed
+
+- MCP server linter: untagged images (implicit `:latest`) are now flagged
+- MCP server linter: success message no longer overclaims — notes that checks are
+  document-wide heuristics
 
 ### Changed
 

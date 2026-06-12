@@ -236,9 +236,13 @@ def check_compose_text(text: str) -> str:
     if re.search(r"^version:", text, re.MULTILINE):
         issues.append("Remove the 'version:' key — it is deprecated in Compose v2")
 
-    # Check for :latest tags
+    # Check for :latest tags — explicit, or implicit via an untagged image
     if re.search(r"image:\s*\S+:latest\b", text):
         issues.append("Pin images to exact version tags — never use :latest")
+    elif re.search(r"^\s*image:\s*[\w./-]+\s*$", text, re.MULTILINE):
+        issues.append(
+            "Pin images to exact version tags — an untagged image defaults to :latest"
+        )
 
     # Check for missing restart policy
     if "services:" in text and "restart:" not in text:
@@ -290,7 +294,11 @@ def check_compose_text(text: str) -> str:
 
     if issues:
         return "Issues found:\n" + "\n".join(f"- {i}" for i in issues)
-    return "No issues found — the compose text follows field guide standards."
+    return (
+        "No issues found by the rule checks. Note: checks are document-wide "
+        "heuristics — one compliant service can satisfy a check for the whole "
+        "file, so verify each service individually."
+    )
 
 
 def main():
