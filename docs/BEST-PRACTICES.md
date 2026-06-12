@@ -206,9 +206,19 @@ After dropping all capabilities, add back **only** what the service requires:
 | `NET_RAW` | Raw sockets, ping, DHCP | Network tools, IoT hubs |
 | `SETGID`, `SETUID` | Entrypoints that drop privileges | Mosquitto, MariaDB, Redis |
 | `CHOWN`, `DAC_OVERRIDE` | Entrypoints that chown data dirs | Mosquitto, Postgres (some images) |
+| `NET_ADMIN` + `CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE` | VPN tunnel setup + privilege-dropping entrypoint; also needs the `/dev/net/tun` device | VPN client (gluetun etc.) |
 | `SYS_PTRACE` | Debugging, process inspection | Development only |
 
 > **Gotcha (entrypoint chown):** Some images (e.g., Eclipse Mosquitto, MariaDB) run `chown` on data directories before dropping to a non-root user. They crash with `Operation not permitted` unless you add `SETGID`, `SETUID`, `CHOWN`, and `DAC_OVERRIDE`.
+>
+> **Gotcha (privilege-dropping entrypoints):** `cap_drop: ALL` + `no-new-privileges:true` break
+> entrypoints that DROP privileges. Gluetun in OpenVPN mode must chown its config and setuid the
+> openvpn worker to a non-root user — under blanket hardening every VPN container dies at
+> `chown /etc/openvpn/target.ovpn: operation not permitted`.
+> Fix: keep `cap_drop: ALL`, re-add the minimal set (`CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE`,
+> plus `NET_ADMIN` for VPN), and in rare cases remove `no-new-privileges` on that one service —
+> document the exception inline (see §3.9). The official Postgres image needs a similar set
+> (`CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `SETGID`, `SETUID`).
 
 ### 3.3 Read-only root filesystem
 
@@ -224,6 +234,11 @@ services:
 ```
 
 This prevents an attacker from writing to the container filesystem. Use `tmpfs` mounts for directories that need to be writable.
+
+> **Gotcha (browser containers and `shm_size`):** Browser-based containers (Playwright, Selenium,
+> FlareSolverr, crawl4ai) crash with the default 64 MB `/dev/shm` — set `shm_size: 1gb` (up to
+> `2gb` for heavy use). `read_only: true` is usually not feasible for them either (they need
+> writable profile dirs); compensate with `cap_drop: ALL` + `no-new-privileges:true`.
 
 ### 3.4 Run as non-root
 
@@ -331,6 +346,13 @@ Common exceptions and their compensations:
 | Writable root filesystem | App writes to non-volume paths | Limit with `tmpfs`, monitor with read-only data volumes |
 | Running as root | Image doesn't support non-root | `no-new-privileges`, `read_only`, capability drop |
 | Docker socket access | Container management | `:ro` mount + socket proxy, isolated network |
+| Removing `no-new-privileges` | Privilege-dropping entrypoints (e.g. OpenVPN-mode gluetun) | Keep `cap_drop: ALL` with a minimal `cap_add`, document inline |
+
+### 3.10 Hardening an existing stack
+
+After any hardening change, run `docker compose up -d --wait` and confirm every affected service
+reaches healthy — including profile-gated or seasonal services that aren't running when you make
+the change. Hardening isn't done until every hardened service is confirmed to start.
 
 ---
 
@@ -658,6 +680,47 @@ services:
 
 > **Security:** For services that should only be accessed locally or through a reverse proxy, bind to `127.0.0.1` to prevent external access.
 
+### 7.6 Sharing a network namespace (network_mode: service:)
+
+The VPN-sidecar pattern: an app container joins the VPN container's network namespace, so all its
+traffic exits through the tunnel.
+
+```yaml
+services:
+  vpn:
+    image: qmcgaw/gluetun:v3.40.0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    ports:
+      - "8080:8080"            # Publish the APP's port on the SIDECAR
+    environment:
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24   # Allow LAN callers back in
+    healthcheck:
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      interval: 30s
+      start_period: 120s       # Tunnel setup is slow — see §9.1
+
+  app:
+    image: your-app:1.0.0
+    network_mode: service:vpn  # Join the VPN container's network namespace
+    depends_on:
+      vpn:
+        condition: service_healthy
+```
+
+Rules for the joined container:
+
+- Publish ports on the **sidecar**, not the app — the app can't declare its own `networks:`
+  or `ports:`
+- The app's healthcheck runs inside the shared namespace, so `localhost:<port>` works
+- Use `depends_on: condition: service_healthy` on the sidecar so the app waits for the tunnel
+- Gluetun needs `FIREWALL_OUTBOUND_SUBNETS` for LAN clients to reach the published ports
+
+> **Gotcha:** Recreating or OOM-killing the sidecar takes the app's networking down with it —
+> expect exit-137 cascades. Recreate the app whenever the sidecar is recreated.
+
 ---
 
 ## 8. Resource limits
@@ -675,6 +738,26 @@ services:
     cpus: 1.0              # CIS 5.11 — prevent CPU starvation
     pids_limit: 200        # CIS 5.28 — prevent fork bombs
 ```
+
+The Compose Specification `deploy.resources` form is equivalent, and Compose v2 honours it
+without Swarm:
+
+```yaml
+services:
+  app:
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "1.0"
+          pids: 200            # pids goes under limits:
+        reservations:
+          memory: 128m         # Baseline footprint — soft, not a cap
+          cpus: "0.25"
+```
+
+Reservations express the service's baseline footprint; limits are the hard cap. Use whichever
+form your stack already uses — don't mix both for the same service.
 
 ### 8.2 Sizing guidelines
 

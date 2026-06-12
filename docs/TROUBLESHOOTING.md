@@ -374,6 +374,16 @@ docker manifest inspect <image>:<tag>
 # (e.g., 2.1.2 vs 2.1.2-alpine)
 ```
 
+### Permission denied right after a security change
+
+Symptom: a service that worked yesterday now dies with
+`chown ...: operation not permitted` (or similar) immediately after you added
+`cap_drop: ALL` or `no-new-privileges:true`.
+
+**Fix:** the hardening broke a privilege-dropping entrypoint — the image chowns its data and
+drops to a non-root user at startup. Re-add the minimal capability set and document the
+exception; see [Best practices §3.2 and §3.9](BEST-PRACTICES.md#32-capability-management).
+
 ---
 
 ## 4. Cleanup and prune strategy
