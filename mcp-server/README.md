@@ -7,7 +7,8 @@ with Claude Code, VS Code, Cursor, and any MCP-compatible client.
 ## Requirements
 
 - Python 3.10+
-- `mcp>=1.0.0` (`pip install mcp`)
+- `mcp>=1.2.0` (`pip install mcp`) — the `mcp.server.fastmcp` module used by `server.py`
+  only exists from 1.2.0
 
 ## Available tools
 
@@ -45,23 +46,26 @@ claude mcp add \
 
 Replace `<PATH_TO_REPO>` with the absolute path to your clone of this repo.
 
+> **Note:** Any Python ≥ 3.10 with the `mcp` package works — the snippets name `python3.10`
+> explicitly because the system `python3` is often older.
+
 After registration, the agent can call tools like `get_best_practices` or
 `check_compose_text` in any project without extra configuration.
 
 ## Register with VS Code and GitHub Copilot
 
-VS Code with Copilot uses MCP servers registered in `settings.json`. Add this
-to your user settings (`Cmd+Shift+P` → "Preferences: Open User Settings (JSON)"):
+VS Code registers MCP servers in a dedicated `mcp.json` file with a top-level
+`"servers"` key (the old `"mcp"` block in `settings.json` is deprecated). Run
+"MCP: Open User Configuration" from the command palette, or edit the file
+directly (macOS path: `~/Library/Application Support/Code/User/mcp.json`):
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "docker-compose-field-guide": {
-        "command": "python3.10",
-        "args": ["<PATH_TO_REPO>/mcp-server/server.py"],
-        "type": "stdio"
-      }
+  "servers": {
+    "docker-compose-field-guide": {
+      "command": "python3.10",
+      "args": ["<PATH_TO_REPO>/mcp-server/server.py"],
+      "type": "stdio"
     }
   }
 }

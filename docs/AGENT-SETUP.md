@@ -330,17 +330,21 @@ claude mcp add \
   python3.10 /path/to/docker-compose-field-guide/mcp-server/server.py
 ```
 
-**VS Code** — add to your user `settings.json`:
+> **Note:** Any Python ≥ 3.10 with the `mcp` package works — the snippets name `python3.10`
+> explicitly because the system `python3` is often older.
+
+**VS Code** — add to the dedicated `mcp.json` file (run "MCP: Open User
+Configuration" from the command palette; macOS path:
+`~/Library/Application Support/Code/User/mcp.json`). The old `"mcp"` block in
+`settings.json` is deprecated:
 
 ```json
 {
-  "mcp": {
-    "servers": {
-      "docker-compose-field-guide": {
-        "command": "python3.10",
-        "args": ["/path/to/docker-compose-field-guide/mcp-server/server.py"],
-        "type": "stdio"
-      }
+  "servers": {
+    "docker-compose-field-guide": {
+      "command": "python3.10",
+      "args": ["/path/to/docker-compose-field-guide/mcp-server/server.py"],
+      "type": "stdio"
     }
   }
 }

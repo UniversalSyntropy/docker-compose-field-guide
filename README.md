@@ -313,7 +313,7 @@ The [annotated template](docker-compose.yml) is a copy-paste starting point.
 ├── mcp-server/
 │   ├── README.md                         ← MCP server setup and registration
 │   ├── server.py                         ← MCP server — exposes tools for AI agents
-│   └── requirements.txt                  ← Python dependency (mcp>=1.0.0)
+│   └── requirements.txt                  ← Python dependency (mcp>=1.2.0)
 ├── .github/
 │   ├── copilot-instructions.md            ← GitHub Copilot repo instructions
 │   ├── dependabot.yml                     ← Automated Docker + Actions updates
