@@ -2,11 +2,20 @@
 
 A reference for building Docker Compose stacks that are well-structured, security-hardened, and straightforward to maintain. Aimed at homelabs and self-hosted setups.
 
+It serves two readers: people, through the guides and recipes, and AI coding agents, through
+machine-readable standards ([CLAUDE.md](CLAUDE.md), [AGENTS.md](AGENTS.md)) and an
+[MCP server](mcp-server/) that exposes the guide as callable tools. The second part is what
+sets it apart — your tools follow the same standards you do.
+
 > **Requires:** Docker Engine 24+ with Docker Compose v2 (`docker compose` plugin).
 >
 > **Scope:** Homelab / self-hosted / LAN-facing services.
 > If you're exposing services to the internet, this is a reasonable starting point — but you'll also need a reverse proxy with TLS, rate limiting, and stricter network policies.
 > See the [threat model note](docs/BEST-PRACTICES.md#3-security-hardening).
+>
+> **Currency:** a reference like this is only as good as its last maintenance pass. Pinned
+> image tags and external links rot — check the latest date in the [changelog](CHANGELOG.md)
+> and verify image pins against the registry before deploying anything from here.
 
 ---
 
@@ -40,6 +49,8 @@ A reference for building Docker Compose stacks that are well-structured, securit
 - **[Advanced secrets management](docs/SECRETS-MANAGEMENT.md)** — graduating from plain-text secrets to SOPS, Doppler, or git-crypt.
 - **[Helper scripts](scripts/)** — safe resets, hard resets, disk reports, and pruning. So you don't have to remember the flags.
 - **[Glossary](docs/GLOSSARY.md) and [index](docs/INDEX.md)** — look up any term, or find where a topic is discussed across the docs.
+- **[A quickstart stack](quickstart/)** — Homepage dashboard + Uptime Kuma, a working two-service demo of every pattern the guide recommends. Deploy it first if you learn by example.
+- **[An MCP server](mcp-server/)** — 11 tools that let AI agents load the standards, fetch recipes, and lint compose YAML on demand. See [AGENT-SETUP.md](docs/AGENT-SETUP.md) for registration.
 - **[AI agent instructions](docs/AGENT-SETUP.md)** — for Claude Code, Copilot, Codex, and Cursor, so your coding tools follow the same standards you do.
 
 **Worth a look:**
