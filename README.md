@@ -155,7 +155,7 @@ flowchart TD
 
         subgraph storage [Volumes & Secrets]
             Vols[Bind Mounts<br/>read-only where possible]
-            Secrets[/run/secrets/*<br/>file-based, never in .env]
+            Secrets["/run/secrets/*<br/>file-based, never in .env"]
         end
 
         Proxy -->|HTTP internal| App1
