@@ -84,7 +84,7 @@ services:
   # ---------------------------------------------------------------------------
   node-exporter:
     container_name: node-exporter
-    image: prom/node-exporter:v1.10.2    # Always pin the full version — rolling major
+    image: prom/node-exporter:v1.12.0    # Always pin the full version — rolling major
                                          # tags aren't guaranteed to exist or stay current
     <<: *default-security
     read_only: true
