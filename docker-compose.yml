@@ -140,7 +140,7 @@ services:
   # ---------------------------------------------------------------------------
   cache:
     container_name: cache
-    image: redis:8.6.1
+    image: redis:8.8.1
     <<: *default-security
     read_only: true
     tmpfs:
