@@ -40,7 +40,7 @@ services:
   # ---------------------------------------------------------------------------
   prometheus:
     container_name: prometheus
-    image: prom/prometheus:v3.9.1        # Always pin the full version — rolling major
+    image: prom/prometheus:v3.13.2        # Always pin the full version — rolling major
                                          # tags aren't guaranteed to exist or stay current
     <<: *default-security
     user: "1000:1000"                    # Run as non-root
